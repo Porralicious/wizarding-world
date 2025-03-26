@@ -14,16 +14,16 @@ import router from './router'
 const wizardingPreset = definePreset(Aura, {
   semantic: {
     primary: {
-      50: '#E3EEFF',
-      100: '#BBD5FF',
-      200: '#91BBFF',
-      300: '#669EFF',
-      400: '#3A84FF',
-      500: '#1966FF',
-      600: '#1351CC',
-      700: '#0E3E99',
-      800: '#092966',
-      900: '#041533',
+      50: '#EEF2FF',
+      100: '#E0E7FF',
+      200: '#C7D2FE',
+      300: '#A5B4FC',
+      400: '#818CF8',
+      500: '#6366F1',
+      600: '#4F46E5',
+      700: '#4338CA',
+      800: '#3730A3',
+      900: '#312E81',
     },
   },
 })
