@@ -31,7 +31,21 @@ const items = ref([
   <div class="app-container">
     <header class="bg-white shadow-md">
       <div class="container mx-auto px-4 py-2">
-        <Menubar :model="items" class="custom-menubar" />
+        <Menubar :model="items" class="custom-menubar">
+          <template #item="{ item }">
+            <router-link
+              v-if="item.to"
+              :to="item.to"
+              class="p-menuitem-link"
+              v-slot="{ href, navigate, isActive }"
+            >
+              <a :href="href" @click="navigate" :class="[isActive ? 'router-link-active' : '']">
+                <span v-if="item.icon" :class="['mr-2', item.icon]"></span>
+                <span class="p-menuitem-text">{{ item.label }}</span>
+              </a>
+            </router-link>
+          </template>
+        </Menubar>
       </div>
     </header>
 
@@ -49,8 +63,6 @@ const items = ref([
 
 html,
 body {
-  margin: 0;
-  padding: 0;
   height: 100%;
   width: 100%;
   background-color: #fff !important;
