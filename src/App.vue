@@ -1,85 +1,113 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { ref } from 'vue'
+import Menubar from 'primevue/menubar'
+
+const items = ref([
+  {
+    label: 'Home',
+    icon: 'fas fa-home',
+    to: '/',
+  },
+  {
+    label: 'Houses',
+    icon: 'fas fa-building',
+    to: '/houses',
+  },
+  {
+    label: 'Spells',
+    icon: 'fas fa-bolt',
+    to: '/spells',
+  },
+  {
+    label: 'Elixirs',
+    icon: 'fas fa-flask',
+    to: '/elixirs',
+  },
+])
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div class="app-container">
+    <header class="bg-white shadow-md">
+      <div class="container mx-auto px-4 py-2">
+        <Menubar :model="items" class="custom-menubar" />
+      </div>
+    </header>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+    <main class="container mx-auto py-8 px-4">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
+<style>
+/* Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+  background-color: #fff !important;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+#app,
+.app-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #fff !important;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+/* Override PrimeVue menu styles */
+.custom-menubar {
+  background-color: #fff !important;
+  border: none !important;
+  z-index: 100 !important;
+  display: block !important;
+  position: relative !important;
 }
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+.custom-menubar .p-menubar,
+.custom-menubar .p-menuitem,
+.custom-menubar .p-menuitem-link,
+.custom-menubar .p-menuitem-text,
+.custom-menubar .p-menuitem-icon {
+  background-color: #fff !important;
+  color: #333 !important;
 }
 
-nav a:first-of-type {
-  border: 0;
+.custom-menubar .p-menubar {
+  display: flex !important;
+  border: none !important;
+  background-color: #fff !important;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+.custom-menubar .p-menuitem-link {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.75rem 1rem !important;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+.custom-menubar .p-menuitem-icon {
+  margin-right: 0.5rem !important;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.custom-menubar .p-menuitem-link:hover {
+  background-color: #f5f5f5 !important;
+}
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+/* This ensures all PrimeVue components have proper background */
+:root {
+  --surface-a: #fff;
+  --surface-b: #fff;
+  --surface-c: #fff;
+  --surface-d: #fff;
+  --surface-e: #fff;
+  --surface-f: #fff;
 }
 </style>
