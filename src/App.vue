@@ -56,7 +56,6 @@ const items = ref([
 </template>
 
 <style>
-/* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -75,7 +74,6 @@ body {
   background-color: #fff !important;
 }
 
-/* Override PrimeVue menu styles */
 .custom-menubar {
   background-color: #fff !important;
   border: none !important;
@@ -113,7 +111,6 @@ body {
   background-color: #f5f5f5 !important;
 }
 
-/* This ensures all PrimeVue components have proper background */
 :root {
   --surface-a: #fff;
   --surface-b: #fff;

@@ -12,7 +12,6 @@ interface House {
   house_points: number
 }
 
-// Example data - in a real app, you would fetch this from an API
 const houses = ref<House[]>([
   { id: '1', name: 'Gryffindor', founder: 'Godric Gryffindor', house_points: 482 },
   { id: '2', name: 'Hufflepuff', founder: 'Helga Hufflepuff', house_points: 352 },
@@ -20,14 +19,11 @@ const houses = ref<House[]>([
   { id: '4', name: 'Slytherin', founder: 'Salazar Slytherin', house_points: 472 },
 ])
 
-// Function to fetch houses (simulated)
 const fetchHouses = async () => {
-  // In a real app, this would be an API call
   await new Promise((resolve) => setTimeout(resolve, 500))
   return houses.value
 }
 
-// TanStack Query
 const { data, isLoading, error } = useQuery({
   queryKey: ['houses'],
   queryFn: fetchHouses,
