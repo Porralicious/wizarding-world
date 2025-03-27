@@ -7,6 +7,9 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { useWizardingWorldStore } from '../stores/wizardingWorld'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 interface Spell {
   id: string
@@ -190,6 +193,12 @@ watch(
                         console.log(slotProps.data.name + ' selected!')
                       }
                     "
+                  />
+                  <Button
+                    icon="fas fa-external-link-alt"
+                    label="Open Details Page"
+                    class="ml-2"
+                    @click="router.push(`/spells/${slotProps.data.id}`)"
                   />
                 </div>
               </template>

@@ -21,6 +21,11 @@ const router = createRouter({
       component: () => import('../views/SpellsView.vue'),
     },
     {
+      path: '/spells/:id',
+      name: 'spell-details',
+      component: () => import('../views/SpellDetailsView.vue'),
+    },
+    {
       path: '/elixirs',
       name: 'elixirs',
       component: () => import('../views/ElixirsView.vue'),
