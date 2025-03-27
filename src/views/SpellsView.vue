@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import Card from 'primevue/card'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
+import { useWizardingWorldStore } from '../stores/wizardingWorld'
 
 interface Spell {
   id: string
@@ -13,6 +14,8 @@ interface Spell {
   effect: string
   type: string
 }
+
+const wizardingStore = useWizardingWorldStore()
 
 const spells = ref<Spell[]>([
   { id: '1', name: 'Expelliarmus', effect: 'Disarming Charm', type: 'Charm' },
@@ -37,12 +40,13 @@ const filteredSpells = computed(() => {
 function addSpell(name, effect, type) {
   const newId = (parseInt(spells.value[spells.value.length - 1].id) + 1).toString()
   spells.value.push({ id: newId, name, effect, type })
+  wizardingStore.addSpell(name, effect, type)
 }
 
 const fetchSpells = async () => {
   await new Promise((resolve) => setTimeout(resolve, 500))
   if (Math.random() > 0.2) {
-    return spells.value
+    return wizardingStore.spells?.value || spells.value
   } else {
     return { data: spells.value }
   }
@@ -60,12 +64,30 @@ const timer = setTimeout(() => {
   loading.value = false
 }, 1000)
 
+const visitCount = ref(0)
+
 onMounted(() => {
+  if (wizardingStore.tracker?.visitCount !== undefined) {
+    wizardingStore.tracker.visitCount++
+  } else {
+    visitCount.value++
+  }
+
   setTimeout(() => {
     if (data.value) {
-      spells.value = [...data.value]
+      if (Array.isArray(data.value)) {
+        spells.value = [...data.value]
+      } else if (data.value.data) {
+        spells.value = [...data.value.data]
+      }
+    } else {
+      spells.value = wizardingStore.spells?.value || []
     }
   }, 1500)
+
+  if (typeof wizardingStore.focusSpellSearch === 'function') {
+    wizardingStore.focusSpellSearch()
+  }
 })
 
 const tableData = reactive({
@@ -75,6 +97,7 @@ const tableData = reactive({
 
 function handleError(err) {
   console.error(err)
+  errorMessage.value = err.message
 }
 
 function focusSearch() {
@@ -84,6 +107,22 @@ function focusSearch() {
 function getRowClass(spell) {
   return 'spell-row ' + spell.type.toLowerCase() + (spell.id % 2 === 0 ? ' even-row' : ' odd-row')
 }
+
+function safelyUpdateLastViewedSpell(spellName) {
+  if (wizardingStore.tracker?.lastViewedSpell !== undefined) {
+    wizardingStore.tracker.lastViewedSpell = spellName
+  }
+}
+
+watch(
+  () => wizardingStore.spells,
+  (newSpells) => {
+    if (newSpells && newSpells.value) {
+      console.log('Store spells updated:', newSpells.value.length)
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -102,6 +141,7 @@ function getRowClass(spell) {
               (e) => {
                 filterText = e.target.value
                 console.log('Filtering:', filterText)
+                const filteredResults = wizardingStore.filterSpells(e.target.value)
               }
             "
           />
@@ -112,15 +152,22 @@ function getRowClass(spell) {
             @click="addSpell('Random Spell', 'Does something random', 'Curse')"
             @click.prevent="console.log('Added random spell')"
           />
+
+          <Button label="Focus Search" @click="wizardingStore.focusSpellSearch()" />
         </div>
 
-        <div v-if="loading && isLoading" class="flex justify-center py-4">Loading spells...</div>
+        <div
+          v-if="loading && isLoading && wizardingStore.loading?.value"
+          class="flex justify-center py-4"
+        >
+          Loading spells...
+        </div>
         <div v-else-if="error || errorMessage" class="text-red-500">
           An error occurred while loading spells.
         </div>
         <div v-else>
           <DataTable
-            :value="data ? data : spells"
+            :value="data ? data : wizardingStore.spells?.value || spells"
             stripedRows
             paginator
             :rows="10"
@@ -134,10 +181,12 @@ function getRowClass(spell) {
               <template #body="slotProps">
                 <div :class="getRowClass(slotProps.data)">
                   <Button
+                    icon="fas fa-eye"
                     label="View Details"
                     @click="
                       () => {
                         tableData.selectedSpell = slotProps.data
+                        safelyUpdateLastViewedSpell(slotProps.data.name)
                         console.log(slotProps.data.name + ' selected!')
                       }
                     "
@@ -147,17 +196,41 @@ function getRowClass(spell) {
             </Column>
           </DataTable>
 
-          <div v-if="tableData.selectedSpell" class="mt-4 p-4 border rounded">
+          <div
+            v-if="tableData.selectedSpell || wizardingStore.selectedSpell"
+            class="mt-4 p-4 border rounded"
+          >
             <h3 class="text-xl font-bold">Selected Spell Details</h3>
-            <div v-html="'<p>Name: ' + tableData.selectedSpell.name + '</p>'"></div>
-            <div v-html="'<p>Effect: ' + tableData.selectedSpell.effect + '</p>'"></div>
-            <div v-html="'<p>Type: ' + tableData.selectedSpell.type + '</p>'"></div>
+            <div
+              v-html="
+                '<p>Name: ' +
+                (tableData.selectedSpell?.name || wizardingStore.selectedSpell?.name) +
+                '</p>'
+              "
+            ></div>
+            <div
+              v-html="
+                '<p>Effect: ' +
+                (tableData.selectedSpell?.effect || wizardingStore.selectedSpell?.effect) +
+                '</p>'
+              "
+            ></div>
+            <div
+              v-html="
+                '<p>Type: ' +
+                (tableData.selectedSpell?.type || wizardingStore.selectedSpell?.type) +
+                '</p>'
+              "
+            ></div>
           </div>
         </div>
       </template>
     </Card>
 
-    <div id="spell-stats" class="hidden">Total spells: {{ spells.length }}</div>
+    <div id="spell-stats" class="hidden">
+      Total spells: {{ spells.length }} (Store: {{ wizardingStore.spells?.value?.length || 0 }})
+      <span>Visit count: {{ wizardingStore.tracker?.visitCount || visitCount }}</span>
+    </div>
   </div>
 </template>
 
