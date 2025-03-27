@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, watch, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import Card from 'primevue/card'
@@ -33,11 +33,61 @@ const detailsTimer = setTimeout(() => {
   console.log('Spell details loaded')
 }, 2000)
 
+const extendedSpellData = {
+  '1': {
+    difficulty_level: 'Intermediate',
+    inventor: 'Elizabeth Smudgling',
+    year_created: 1379,
+    countermeasures: ['Protego', 'Rennervate'],
+  },
+  '2': {
+    difficulty_level: 'Beginner',
+    inventor: 'Levina Monkstanley',
+    year_created: 1772,
+    countermeasures: [],
+  },
+  '3': {
+    difficulty_level: 'Advanced',
+    inventor: 'Bowman Wright',
+    year_created: 997,
+    countermeasures: ['Dementors are only affected by this spell'],
+  },
+  '4': {
+    difficulty_level: 'Beginner',
+    inventor: 'Miranda Goshawk',
+    year_created: 1921,
+    countermeasures: ['Finite Incantatem'],
+  },
+  '5': {
+    difficulty_level: 'Intermediate',
+    inventor: 'Unknown',
+    year_created: 1200,
+    countermeasures: ['Anti-Summoning Charm'],
+  },
+}
+
 const fetchSpellDetails = async () => {
   await new Promise((resolve) => setTimeout(resolve, 500))
 
-  if (Math.random() > 0.3) {
-    const spell = wizardingStore.spells?.value?.find((s) => s.id === spellId) || {
+  let baseSpell = null
+
+  if (wizardingStore.spells && wizardingStore.spells.value) {
+    baseSpell = wizardingStore.spells.value.find((s) => s.id === spellId)
+  }
+
+  if (!baseSpell) {
+    const hardcodedSpells = [
+      { id: '1', name: 'Expelliarmus', effect: 'Disarming Charm', type: 'Charm' },
+      { id: '2', name: 'Lumos', effect: 'Creates light from wand tip', type: 'Charm' },
+      { id: '3', name: 'Expecto Patronum', effect: 'Conjures a Patronus', type: 'Charm' },
+      { id: '4', name: 'Wingardium Leviosa', effect: 'Levitation Charm', type: 'Charm' },
+      { id: '5', name: 'Accio', effect: 'Summoning Charm', type: 'Charm' },
+    ]
+    baseSpell = hardcodedSpells.find((s) => s.id === spellId)
+  }
+
+  if (!baseSpell) {
+    return {
       id: spellId,
       name: 'Unknown Spell',
       effect: 'Unknown Effect',
@@ -47,21 +97,18 @@ const fetchSpellDetails = async () => {
       year_created: 0,
       countermeasures: [],
     }
+  }
 
-    return spell
+  const extendedData = extendedSpellData[spellId] || {}
+  const fullSpell = {
+    ...baseSpell,
+    ...extendedData,
+  }
+
+  if (Math.random() > 0.3) {
+    return fullSpell
   } else {
-    return {
-      data: wizardingStore.spells?.value?.find((s) => s.id === spellId) || {
-        id: spellId,
-        name: 'Unknown Spell',
-        effect: 'Unknown Effect',
-        type: 'Unknown Type',
-        difficulty_level: 'Unknown',
-        inventor: 'Unknown',
-        year_created: 0,
-        countermeasures: [],
-      },
-    }
+    return { data: fullSpell }
   }
 }
 
@@ -122,6 +169,10 @@ onMounted(() => {
   if (wizardingStore.tracker) {
     wizardingStore.tracker.lastViewedSpell = spellId
   }
+})
+
+onUnmounted(() => {
+  clearTimeout(detailsTimer)
 })
 </script>
 
