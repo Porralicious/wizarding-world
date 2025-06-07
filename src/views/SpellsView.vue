@@ -184,7 +184,6 @@ watch(
               <template #body="slotProps">
                 <div :class="getRowClass(slotProps.data)">
                   <Button
-                    icon="fas fa-eye"
                     label="View Details"
                     @click="
                       () => {
@@ -193,13 +192,17 @@ watch(
                         console.log(slotProps.data.name + ' selected!')
                       }
                     "
-                  />
+                  >
+                    <font-awesome-icon icon="fas fa-eye" />
+                  </Button>
                   <Button
                     icon="fas fa-external-link-alt"
                     label="Open Details Page"
                     class="ml-2"
                     @click="router.push(`/spells/${slotProps.data.id}`)"
-                  />
+                  >
+                    <font-awesome-icon icon="fas fa-external-link-alt" />
+                  </Button>
                 </div>
               </template>
             </Column>

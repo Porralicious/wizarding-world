@@ -128,11 +128,9 @@ onUnmounted(() => {
             <Column>
               <template #body="slotProps">
                 <div :class="'house-row ' + slotProps.data.name.toLowerCase()">
-                  <Button
-                    icon="fas fa-eye"
-                    label="View Details"
-                    @click="selectHouse(slotProps.data)"
-                  />
+                  <Button label="View Details" @click="selectHouse(slotProps.data)">
+                    <font-awesome-icon icon="fas fa-eye" />
+                  </Button>
                 </div>
               </template>
             </Column>
