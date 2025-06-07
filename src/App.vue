@@ -2,6 +2,8 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { ref } from 'vue'
 import Menubar from 'primevue/menubar'
+import { useWizardingWorldStore } from '@/stores/wizardingWorld'
+import { onMounted } from 'vue'
 
 const items = ref([
   {
@@ -25,6 +27,15 @@ const items = ref([
     to: '/elixirs',
   },
 ])
+
+const wizardingWorldStore = useWizardingWorldStore()
+
+onMounted(() => {
+  wizardingWorldStore.fetchHouses()
+  wizardingWorldStore.fetchIngredients()
+  wizardingWorldStore.fetchElixirs()
+  wizardingWorldStore.fetchSpells()
+})
 </script>
 
 <template>
