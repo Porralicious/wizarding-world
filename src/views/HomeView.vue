@@ -156,7 +156,7 @@ function updateCardColors() {
             <template #footer>
               <div class="flex justify-end pt-2">
                 <Button class="flex items-center" onclick="navigateTo(card.route)">
-                  Explore <i class="fas fa-arrow-right ml-2"></i>
+                  Explore <font-awesome-icon class="ml-2" icon="fas fa-arrow-right" />
                 </Button>
               </div>
             </template>

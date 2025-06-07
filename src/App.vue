@@ -40,7 +40,7 @@ const items = ref([
               v-slot="{ href, navigate, isActive }"
             >
               <a :href="href" @click="navigate" :class="[isActive ? 'router-link-active' : '']">
-                <span v-if="item.icon" :class="['mr-2', item.icon]"></span>
+                <font-awesome-icon :icon="item.icon" />
                 <span class="p-menuitem-text">{{ item.label }}</span>
               </a>
             </router-link>

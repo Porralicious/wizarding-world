@@ -1,5 +1,4 @@
 import './assets/main.css'
-import '@fortawesome/fontawesome-free/css/all.min.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -8,8 +7,34 @@ import Aura from '@primeuix/themes/aura'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import { definePreset } from '@primeuix/themes'
 
+/* import the fontawesome core */
+import { library } from '@fortawesome/fontawesome-svg-core'
+
+/* import font awesome icon component */
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+import { faFlask } from '@fortawesome/free-solid-svg-icons'
+import { faUserSecret } from '@fortawesome/free-solid-svg-icons'
+import { faBolt } from '@fortawesome/free-solid-svg-icons'
+import { faBuilding } from '@fortawesome/free-solid-svg-icons'
+import { faHome } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRight } from '@fortawesome/free-solid-svg-icons'
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
+import { faEye } from '@fortawesome/free-solid-svg-icons'
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+
 import App from './App.vue'
 import router from './router'
+
+library.add(faUserSecret)
+library.add(faFlask)
+library.add(faHome)
+library.add(faBuilding)
+library.add(faBolt)
+library.add(faArrowRight)
+library.add(faArrowLeft)
+library.add(faEye)
+library.add(faExternalLinkAlt)
 
 const wizardingPreset = definePreset(Aura, {
   semantic: {
@@ -40,6 +65,7 @@ app.use(PrimeVue, {
     },
   },
 })
+app.component('font-awesome-icon', FontAwesomeIcon)
 app.use(VueQueryPlugin)
 
 app.mount('#app')
