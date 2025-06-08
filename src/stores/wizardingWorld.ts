@@ -90,9 +90,9 @@ export const useWizardingWorldStore = defineStore('wizardingWorld', {
     // getSpellsByType: (state) => (type) => {
     //   return this.spells.filter((spell) => spell.type === type)
     // },
-    // getSelectedHouse: (state) => {
-    //   return state.selectedHouse
-    // },
+    getHouse: (state) => {
+      return (houseId: string) => state.houses.find((house: House) => house.id === houseId)
+    },
   },
 
   actions: {
