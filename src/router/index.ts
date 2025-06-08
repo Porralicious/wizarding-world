@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import HousesView from '../views/HousesView.vue'
+import HouseDetail from '../views/HouseDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,6 +15,18 @@ const router = createRouter({
       path: '/houses',
       name: 'houses',
       component: HousesView,
+      children: [
+        {
+          path: ':id',
+          component: HouseDetail,
+        },
+      ],
+    },
+    {
+      path: '/house/:id',
+      name: 'house-detail',
+      component: HouseDetail,
+      props: true, // Allows the router to pass the route params as props to the component
     },
     {
       path: '/spells',
