@@ -1,267 +1,295 @@
+<template>
+  <div class="spells-view">
+    <div class="card">
+      <h1 class="text-3xl font-bold mb-6">Spells</h1>
+
+      <!-- Loading State -->
+      <div v-if="store.loading.spells" class="flex justify-center items-center py-8">
+        <ProgressSpinner />
+      </div>
+
+      <!-- Error State -->
+      <Message v-else-if="store.errors.spells" severity="error" class="mb-4">
+        {{ store.errors.spells }}
+        <template #action>
+          <Button icon="pi pi-refresh" text @click="loadSpells" :loading="store.loading.spells" />
+        </template>
+      </Message>
+
+      <!-- DataTable -->
+      <DataTable
+        v-else
+        :value="spells"
+        :paginator="true"
+        :rows="10"
+        :rowsPerPageOptions="[5, 10, 20, 50]"
+        :totalRecords="spells.length"
+        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+        :loading="store.loading.spells"
+        filterDisplay="menu"
+        :globalFilterFields="['name', 'type', 'incantation']"
+        class="p-datatable-sm"
+        stripedRows
+        responsiveLayout="scroll"
+      >
+        <template #header>
+          <div class="flex justify-between items-center">
+            <h2 class="text-xl font-semibold">All Spells ({{ spells.length }})</h2>
+            <div class="flex gap-2">
+              <IconField iconPosition="left">
+                <InputIcon class="pi pi-search" />
+                <InputText
+                  v-model="filters['global'].value"
+                  placeholder="Search spells..."
+                  class="w-64"
+                />
+              </IconField>
+              <Button
+                icon="pi pi-refresh"
+                @click="loadSpells"
+                :loading="store.loading.spells"
+                severity="secondary"
+                outlined
+              />
+            </div>
+          </div>
+        </template>
+
+        <Column field="name" header="Name" sortable style="min-width: 200px">
+          <template #body="{ data }">
+            <div class="font-medium">{{ data.name }}</div>
+          </template>
+        </Column>
+
+        <Column field="incantation" header="Incantation" sortable style="min-width: 150px">
+          <template #body="{ data }">
+            <Badge
+              v-if="data.incantation"
+              :value="data.incantation"
+              severity="info"
+              class="font-mono"
+            />
+            <span v-else class="text-gray-400 italic">No incantation</span>
+          </template>
+        </Column>
+
+        <Column field="type" header="Type" sortable style="min-width: 120px">
+          <template #body="{ data }">
+            <Tag v-if="data.type" :value="data.type" :severity="getTypeSeverity(data.type)" />
+            <span v-else class="text-gray-400 italic">Unknown</span>
+          </template>
+        </Column>
+
+        <Column field="light" header="Light" sortable style="min-width: 100px">
+          <template #body="{ data }">
+            <div v-if="data.light" class="flex items-center gap-2">
+              <div
+                class="w-4 h-4 rounded-full border-2 border-gray-300"
+                :style="{ backgroundColor: data.light }"
+                :title="data.light"
+              ></div>
+              <span class="text-sm">{{ data.light }}</span>
+            </div>
+            <span v-else class="text-gray-400 italic">No light</span>
+          </template>
+        </Column>
+
+        <Column field="effect" header="Effect" style="min-width: 300px">
+          <template #body="{ data }">
+            <div v-if="data.effect" class="text-sm">
+              {{ truncateText(data.effect, 100) }}
+            </div>
+            <span v-else class="text-gray-400 italic">No description</span>
+          </template>
+        </Column>
+
+        <Column header="Actions" style="min-width: 100px">
+          <template #body="{ data }">
+            <div class="flex gap-2">
+              <Button
+                icon="pi pi-eye"
+                size="small"
+                text
+                @click="viewSpell(data)"
+                v-tooltip="'View Details'"
+              />
+              <Button
+                icon="pi pi-heart"
+                size="small"
+                text
+                severity="danger"
+                @click="toggleFavorite(data)"
+                v-tooltip="'Add to Favorites'"
+              />
+            </div>
+          </template>
+        </Column>
+
+        <template #empty>
+          <div class="text-center py-8">
+            <i class="pi pi-search text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-500">No spells found</p>
+            <Button label="Load Spells" icon="pi pi-refresh" @click="loadSpells" class="mt-4" />
+          </div>
+        </template>
+      </DataTable>
+    </div>
+
+    <!-- Spell Details Dialog -->
+    <Dialog
+      v-model:visible="showSpellDialog"
+      :header="selectedSpell?.name || 'Spell Details'"
+      :style="{ width: '50vw' }"
+      :modal="true"
+    >
+      <div v-if="selectedSpell" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="font-semibold">Name:</label>
+            <p>{{ selectedSpell.name }}</p>
+          </div>
+          <div>
+            <label class="font-semibold">Type:</label>
+            <Tag
+              v-if="selectedSpell.type"
+              :value="selectedSpell.type"
+              :severity="getTypeSeverity(selectedSpell.type)"
+            />
+          </div>
+          <div>
+            <label class="font-semibold">Incantation:</label>
+            <Badge
+              v-if="selectedSpell.incantation"
+              :value="selectedSpell.incantation"
+              severity="info"
+              class="font-mono"
+            />
+          </div>
+          <div v-if="selectedSpell.light">
+            <label class="font-semibold">Light:</label>
+            <div class="flex items-center gap-2">
+              <div
+                class="w-6 h-6 rounded-full border-2 border-gray-300"
+                :style="{ backgroundColor: selectedSpell.light }"
+              ></div>
+              <span>{{ selectedSpell.light }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-if="selectedSpell.effect">
+          <label class="font-semibold">Effect:</label>
+          <p class="mt-2">{{ selectedSpell.effect }}</p>
+        </div>
+      </div>
+    </Dialog>
+  </div>
+</template>
+
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive, watch } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
-import Card from 'primevue/card'
+import { ref, computed, onMounted } from 'vue'
+import { useWizardingWorldStore } from '@/stores/wizardingWorld'
+import { FilterMatchMode } from '@primevue/core/api'
+import type { Spell } from '@/types/Spell'
+
+// PrimeVue Components
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
-import { useWizardingWorldStore } from '../stores/wizardingWorld'
-import { useRouter } from 'vue-router'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import ProgressSpinner from 'primevue/progressspinner'
+import Message from 'primevue/message'
+import Badge from 'primevue/badge'
+import Tag from 'primevue/tag'
+import Dialog from 'primevue/dialog'
 
-const router = useRouter()
+const store = useWizardingWorldStore()
 
-interface Spell {
-  id: string
-  name: string
-  effect: string
-  type: string
-}
+// Reactive data
+const showSpellDialog = ref(false)
+const selectedSpell = ref<Spell | null>(null)
 
-const wizardingStore = useWizardingWorldStore()
-
-const spells = ref<Spell[]>([
-  { id: '1', name: 'Expelliarmus', effect: 'Disarming Charm', type: 'Charm' },
-  { id: '2', name: 'Lumos', effect: 'Creates light from wand tip', type: 'Charm' },
-  { id: '3', name: 'Expecto Patronum', effect: 'Conjures a Patronus', type: 'Charm' },
-  { id: '4', name: 'Wingardium Leviosa', effect: 'Levitation Charm', type: 'Charm' },
-  { id: '5', name: 'Accio', effect: 'Summoning Charm', type: 'Charm' },
-])
-
-let filterText = ''
-
-const filteredSpells = computed(() => {
-  return spells.value.filter((spell) => {
-    return (
-      spell.name.toLowerCase().includes(filterText.toLowerCase()) ||
-      spell.effect.toLowerCase().includes(filterText.toLowerCase()) ||
-      spell.type.toLowerCase().includes(filterText.toLowerCase())
-    )
-  })
+// Filters for the DataTable
+const filters = ref({
+  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
 
-function addSpell(name, effect, type) {
-  const newId = (parseInt(spells.value[spells.value.length - 1].id) + 1).toString()
-  spells.value.push({ id: newId, name, effect, type })
-  wizardingStore.addSpell(name, effect, type)
-}
+// Computed
+const spells = computed(() => store.spells)
 
-const fetchSpells = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 500))
-  if (Math.random() > 0.2) {
-    return wizardingStore.spells?.value || spells.value
-  } else {
-    return { data: spells.value }
+// Methods
+const loadSpells = async () => {
+  try {
+    await store.fetchSpells()
+  } catch (error) {
+    console.error('Failed to load spells:', error)
   }
 }
 
-const { data, isLoading, error } = useQuery({
-  queryKey: ['spells'],
-  queryFn: fetchSpells,
-})
+const viewSpell = (spell: Spell) => {
+  selectedSpell.value = spell
+  showSpellDialog.value = true
+}
 
-const loading = ref(true)
-const errorMessage = ref('')
+const toggleFavorite = (spell: Spell) => {
+  // Implement favorite functionality
+  console.log('Toggle favorite for:', spell.name)
+}
 
-const timer = setTimeout(() => {
-  loading.value = false
-}, 1000)
+const getTypeSeverity = (type: string): string => {
+  const severityMap: Record<string, string> = {
+    Charm: 'success',
+    Curse: 'danger',
+    Hex: 'warning',
+    Jinx: 'info',
+    Spell: 'secondary',
+    Transfiguration: 'success',
+    Conjuration: 'info',
+  }
+  return severityMap[type] || 'secondary'
+}
 
-const visitCount = ref(0)
+const truncateText = (text: string, maxLength: number): string => {
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + '...'
+}
 
+// Lifecycle
 onMounted(() => {
-  if (wizardingStore.tracker?.visitCount !== undefined) {
-    wizardingStore.tracker.visitCount++
-  } else {
-    visitCount.value++
-  }
-
-  setTimeout(() => {
-    if (data.value) {
-      if (Array.isArray(data.value)) {
-        spells.value = [...data.value]
-      } else if (data.value.data) {
-        spells.value = [...data.value.data]
-      }
-    } else {
-      spells.value = wizardingStore.spells?.value || []
-    }
-  }, 1500)
-
-  if (typeof wizardingStore.focusSpellSearch === 'function') {
-    wizardingStore.focusSpellSearch()
+  if (store.spells.length === 0) {
+    loadSpells()
   }
 })
-
-const tableData = reactive({
-  spells: [],
-  selectedSpell: null,
-})
-
-function handleError(err) {
-  console.error(err)
-  errorMessage.value = err.message
-}
-
-function focusSearch() {
-  document.getElementById('spell-search').focus()
-}
-
-function getRowClass(spell) {
-  return 'spell-row ' + spell.type.toLowerCase() + (spell.id % 2 === 0 ? ' even-row' : ' odd-row')
-}
-
-function safelyUpdateLastViewedSpell(spellName) {
-  if (wizardingStore.tracker?.lastViewedSpell !== undefined) {
-    wizardingStore.tracker.lastViewedSpell = spellName
-  }
-}
-
-watch(
-  () => wizardingStore.spells,
-  (newSpells) => {
-    if (newSpells && newSpells.value) {
-      console.log('Store spells updated:', newSpells.value.length)
-    }
-  },
-  { immediate: true },
-)
 </script>
 
-<template>
-  <div>
-    <Card class="mb-4">
-      <template #title>Spells</template>
-      <template #content>
-        <p class="mb-4">Discover various spells from the wizarding world.</p>
-
-        <div class="mb-4 flex gap-2">
-          <InputText
-            id="spell-search"
-            placeholder="Filter spells..."
-            :value="filterText"
-            @input="
-              (e) => {
-                filterText = e.target.value
-                console.log('Filtering:', filterText)
-                const filteredResults = wizardingStore.filterSpells(e.target.value)
-              }
-            "
-          />
-          <Button label="Clear" @click="filterText = ''" />
-
-          <Button
-            label="Add Random Spell"
-            @click="addSpell('Random Spell', 'Does something random', 'Curse')"
-            @click.prevent="console.log('Added random spell')"
-          />
-
-          <Button label="Focus Search" @click="wizardingStore.focusSpellSearch()" />
-        </div>
-
-        <div
-          v-if="loading && isLoading && wizardingStore.loading?.value"
-          class="flex justify-center py-4"
-        >
-          Loading spells...
-        </div>
-        <div v-else-if="error || errorMessage" class="text-red-500">
-          An error occurred while loading spells.
-        </div>
-        <div v-else>
-          <DataTable
-            :value="data ? data : wizardingStore.spells?.value || spells"
-            stripedRows
-            paginator
-            :rows="10"
-            tableStyle="min-width: 50rem"
-            v-model:selection="tableData.selectedSpell"
-          >
-            <Column field="name" header="Name" sortable></Column>
-            <Column field="effect" header="Effect" sortable></Column>
-            <Column field="type" header="Type" sortable></Column>
-            <Column>
-              <template #body="slotProps">
-                <div :class="getRowClass(slotProps.data)">
-                  <Button
-                    label="View Details"
-                    @click="
-                      () => {
-                        tableData.selectedSpell = slotProps.data
-                        safelyUpdateLastViewedSpell(slotProps.data.name)
-                        console.log(slotProps.data.name + ' selected!')
-                      }
-                    "
-                  >
-                    <font-awesome-icon icon="fas fa-eye" />
-                  </Button>
-                  <Button
-                    icon="fas fa-external-link-alt"
-                    label="Open Details Page"
-                    class="ml-2"
-                    @click="router.push(`/spells/${slotProps.data.id}`)"
-                  >
-                    <font-awesome-icon icon="fas fa-external-link-alt" />
-                  </Button>
-                </div>
-              </template>
-            </Column>
-          </DataTable>
-
-          <div
-            v-if="tableData.selectedSpell || wizardingStore.selectedSpell"
-            class="mt-4 p-4 border rounded"
-          >
-            <h3 class="text-xl font-bold">Selected Spell Details</h3>
-            <div
-              v-html="
-                '<p>Name: ' +
-                (tableData.selectedSpell?.name || wizardingStore.selectedSpell?.name) +
-                '</p>'
-              "
-            ></div>
-            <div
-              v-html="
-                '<p>Effect: ' +
-                (tableData.selectedSpell?.effect || wizardingStore.selectedSpell?.effect) +
-                '</p>'
-              "
-            ></div>
-            <div
-              v-html="
-                '<p>Type: ' +
-                (tableData.selectedSpell?.type || wizardingStore.selectedSpell?.type) +
-                '</p>'
-              "
-            ></div>
-          </div>
-        </div>
-      </template>
-    </Card>
-
-    <div id="spell-stats" class="hidden">
-      Total spells: {{ spells.length }} (Store: {{ wizardingStore.spells?.value?.length || 0 }})
-      <span>Visit count: {{ wizardingStore.tracker?.visitCount || visitCount }}</span>
-    </div>
-  </div>
-</template>
-
 <style scoped>
-.spell-row {
-  padding: 4px;
-  margin: 2px 0;
-  border-radius: 4px;
+.spells-view {
+  padding: 1rem;
 }
 
-.charm {
-  background-color: rgba(0, 128, 255, 0.1);
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.curse {
-  background-color: rgba(255, 0, 0, 0.1);
+:deep(.p-datatable .p-datatable-header) {
+  background: transparent;
+  border: none;
+  padding: 0 0 1rem 0;
 }
 
-.even-row {
-  background-color: rgba(240, 240, 240, 0.5) !important;
+:deep(.p-datatable .p-datatable-thead > tr > th) {
+  background: #f8f9fa;
+  border-color: #e9ecef;
+}
+
+:deep(.p-paginator) {
+  border: none;
+  background: transparent;
+  padding: 1rem 0 0 0;
 }
 </style>

@@ -31,10 +31,10 @@ const items = ref([
 const wizardingWorldStore = useWizardingWorldStore()
 
 onMounted(() => {
-  wizardingWorldStore.fetchHouses()
-  wizardingWorldStore.fetchIngredients()
-  wizardingWorldStore.fetchElixirs()
-  wizardingWorldStore.fetchSpells()
+  // wizardingWorldStore.fetchHouses()
+  // wizardingWorldStore.fetchIngredients()
+  // wizardingWorldStore.fetchElixirs()
+  // wizardingWorldStore.fetchSpells()
 })
 </script>
 
