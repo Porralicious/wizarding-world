@@ -1,27 +1,17 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed, nextTick } from 'vue'
+import { useWizardingWorldStore } from '@/stores/wizardingWorld'
 import { useQuery } from '@tanstack/vue-query'
 import Card from 'primevue/card'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
-
-interface Elixir {
-  id: string
-  name: string
-  effect: string
-  difficulty: string
-  ingredients?: string[]
-}
-
-const elixirs = ref<Elixir[]>([
-  { id: '1', name: 'Felix Felicis', effect: 'Grants luck', difficulty: 'Advanced' },
-  { id: '2', name: 'Amortentia', effect: 'Powerful love potion', difficulty: 'Advanced' },
-  { id: '3', name: 'Polyjuice Potion', effect: 'Transforms appearance', difficulty: 'Challenging' },
-  { id: '4', name: 'Veritaserum', effect: 'Forces truth-telling', difficulty: 'Master' },
-  { id: '5', name: 'Pepperup Potion', effect: 'Cures common cold', difficulty: 'Beginner' },
-])
+import { ElixirDifficulty } from '@/types/Elixir'
+import type { Elixir } from '@/types/Elixir'
+import VirtualScroller from 'primevue/virtualscroller'
+const store = useWizardingWorldStore()
+const elixirs = computed(() => store.elixirs)
 
 let selectedElixir = {
   id: '',
@@ -53,12 +43,12 @@ onMounted(() => {
   }, 10000)
 
   setTimeout(() => {
-    elixirs.value.push({
-      id: '6',
-      name: 'Draught of Living Death',
-      effect: 'Causes deep sleep',
-      difficulty: 'Advanced',
-    })
+    // elixirs.value.push({
+    //   id: '6',
+    //   name: 'Draught of Living Death',
+    //   effect: 'Causes deep sleep',
+    //   difficulty: 'Advanced',
+    // })
 
     // Direct DOM manipulation instead of using reactivity
     const container = document.getElementById('elixir-container')
@@ -168,6 +158,18 @@ const fetchElixirs = async () => {
 
   return elixirs.value
 }
+const loadElixirs = async () => {
+  try {
+    await store.fetchElixirs()
+  } catch (error) {
+    console.error('Failed to load elixirs:', error)
+  }
+}
+onMounted(() => {
+  if (store.spells.length === 0) {
+    loadElixirs()
+  }
+})
 
 // Overly verbose watchers
 watch(
@@ -235,14 +237,10 @@ function refreshTable() {
     renderElixirsDirectly()
   })
 }
-
-const difficultiesOptions = [
-  { label: 'All', value: '' },
-  { label: 'Beginner', value: 'Beginner' },
-  { label: 'Challenging', value: 'Challenging' },
-  { label: 'Advanced', value: 'Advanced' },
-  { label: 'Master', value: 'Master' },
-]
+const difficultiesOptions = Object.values(ElixirDifficulty).map((value) => ({
+  label: value,
+  value,
+}))
 
 const items = ref([])
 
@@ -312,8 +310,12 @@ watch(
             <p v-html="`Effect: ${elixir.effect}`"></p>
             <p>Difficulty: {{ elixir.difficulty }}</p>
             <div class="action-buttons">
-              <Button icon="pi pi-pencil" severity="info" @click="selectElixir(elixir)" />
-              <Button icon="pi pi-trash" severity="danger" @click="deleteElixir(elixir.id)" />
+              <Button severity="info" @click="selectElixir(elixir)">
+                <font-awesome-icon icon="fas fa-circle-info" />
+              </Button>
+              <Button icon="pi pi-trash" severity="danger" @click="deleteElixir(elixir.id)">
+                <font-awesome-icon icon="fas fa-trash" />
+              </Button>
             </div>
           </div>
         </div>

@@ -25,6 +25,8 @@ import { faArrowRight } from '@fortawesome/free-solid-svg-icons'
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 import { faEye } from '@fortawesome/free-solid-svg-icons'
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 
 import App from './App.vue'
 import router from './router'
@@ -50,6 +52,8 @@ library.add(faArrowRight)
 library.add(faArrowLeft)
 library.add(faEye)
 library.add(faExternalLinkAlt)
+library.add(faCircleInfo)
+library.add(faTrash)
 
 const wizardingPreset = definePreset(Aura, {
   semantic: {
