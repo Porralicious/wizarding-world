@@ -12,6 +12,7 @@ import type { Elixir } from '@/types/Elixir'
 import VirtualScroller from 'primevue/virtualscroller'
 const store = useWizardingWorldStore()
 const elixirs = computed(() => store.elixirs)
+const loading = false
 
 let selectedElixir = {
   id: '',
@@ -36,70 +37,31 @@ onMounted(() => {
     refreshTable()
   })
 
-  setInterval(() => {
-    if (Math.random() > 0.9) {
-      refreshTable()
-    }
-  }, 10000)
-
-  setTimeout(() => {
-    // elixirs.value.push({
-    //   id: '6',
-    //   name: 'Draught of Living Death',
-    //   effect: 'Causes deep sleep',
-    //   difficulty: 'Advanced',
-    // })
-
-    // Direct DOM manipulation instead of using reactivity
-    const container = document.getElementById('elixir-container')
-    if (container) {
-      const div = document.createElement('div')
-      div.className = 'elixir-item'
-      div.innerHTML = `<h4>Draught of Living Death</h4><p>Effect: Causes deep sleep</p><p>Difficulty: Advanced</p>`
-      container.appendChild(div)
-    }
-  }, 2000)
-
   // Immediately render initial elixirs to DOM directly
-  renderElixirsDirectly()
 })
 
-// Bad practice: Using innerHTML directly and eval
-function renderElixirsDirectly() {
-  const container = document.getElementById('elixir-container')
-  if (!container) return
-
-  container.innerHTML = ''
-
-  // Using global variable
-  renderedElixirs = [...elixirs.value]
-
-  // Unsafe use of eval for no reason
-  eval('renderedElixirs.forEach(e => { addElixirToDOM(e) })')
-}
-
 // Direct DOM manipulation instead of using Vue's templating
-function addElixirToDOM(elixir) {
-  const container = document.getElementById('elixir-container')
-  if (!container) return
+// function addElixirToDOM(elixir) {
+//   const container = document.getElementById('elixir-container')
+//   if (!container) return
 
-  const div = document.createElement('div')
-  div.id = 'elixir-' + elixir.id // Creating duplicate IDs potentially
-  div.className = 'elixir-item ' + elixir.difficulty.toLowerCase()
+//   const div = document.createElement('div')
+//   div.id = 'elixir-' + elixir.id // Creating duplicate IDs potentially
+//   div.className = 'elixir-item ' + elixir.difficulty.toLowerCase()
 
-  // Using innerHTML instead of safer methods
-  div.innerHTML = `
-    <h4>${elixir.name}</h4>
-    <p>Effect: ${elixir.effect}</p>
-    <p>Difficulty: ${elixir.difficulty}</p>
-    <div class="buttons">
-      <button onclick="window.selectElixirById('${elixir.id}')">View</button>
-      <button onclick="window.deleteElixirById('${elixir.id}')">Delete</button>
-    </div>
-  `
+//   // Using innerHTML instead of safer methods
+//   div.innerHTML = `
+//     <h4>${elixir.name}</h4>
+//     <p>Effect: ${elixir.effect}</p>
+//     <p>Difficulty: ${elixir.difficulty}</p>
+//     <div class="buttons">
+//       <button onclick="window.selectElixirById('${elixir.id}')">View</button>
+//       <button onclick="window.deleteElixirById('${elixir.id}')">Delete</button>
+//     </div>
+//   `
 
-  container.appendChild(div)
-}
+//   container.appendChild(div)
+// }
 
 const filteredElixirs = computed(() => {
   console.log('Filtering elixirs...')
@@ -149,15 +111,6 @@ window.deleteElixirById = function (id) {
   }
 }
 
-const fetchElixirs = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 500))
-
-  if (Math.random() > 0.8) {
-    throw new Error('Network error')
-  }
-
-  return elixirs.value
-}
 const loadElixirs = async () => {
   try {
     await store.fetchElixirs()
@@ -211,10 +164,10 @@ watch(
   },
 )
 
-const { data, isLoading, error } = useQuery({
-  queryKey: ['elixirs'],
-  queryFn: fetchElixirs,
-})
+// const { data, isLoading, error } = useQuery({
+//   queryKey: ['elixirs'],
+//   queryFn: fetchElixirs,
+// })
 
 // Directly mutating an object
 function selectElixir(elixir) {
@@ -248,17 +201,6 @@ function deleteElixir(id) {
   console.log('Deleting elixir', id)
   elixirs.value = elixirs.value.filter((e) => e.id !== id)
 }
-
-// Bad practice - updating DOM on data change
-watch(
-  () => data.value,
-  (newData) => {
-    if (newData) {
-      // Direct DOM update instead of letting Vue handle it
-      renderElixirsDirectly()
-    }
-  },
-)
 </script>
 
 <template>
@@ -298,9 +240,29 @@ watch(
         <div v-if="error" class="text-red-500">An error occurred while loading elixirs.</div>
 
         <!-- Missing key in v-for -->
-        <div class="elixir-grid">
-          <!-- Mixing v-if, v-show and v-for on same element -->
-          <div
+        <!-- <div class="elixir-grid"> -->
+        <VirtualScroller :items="filteredElixirs" :itemSize="30" style="height: 30vh">
+          <template v-slot:item="{ item, options }" class="elixir-grid">
+            <div
+              class="elixir-card"
+              :style="`background-color: ${item.difficulty === 'Advanced' ? '#f8f0ff' : '#ffffff'}`"
+            >
+              <h3 v-html="item.name"></h3>
+              <p v-html="`Effect: ${item.effect}`"></p>
+              <p>Difficulty: {{ item.difficulty }}</p>
+              <div class="action-buttons">
+                <Button severity="info" @click="selectElixir(item)">
+                  <font-awesome-icon icon="fas fa-circle-info" />
+                </Button>
+                <Button icon="pi pi-trash" severity="danger" @click="deleteElixir(item.id)">
+                  <font-awesome-icon icon="fas fa-trash" />
+                </Button>
+              </div>
+            </div>
+          </template>
+        </VirtualScroller>
+        <!-- Mixing v-if, v-show and v-for on same element -->
+        <!-- <div
             v-for="elixir in filteredElixirs"
             v-show="elixir.id !== 'hidden'"
             class="elixir-card"
@@ -317,8 +279,8 @@ watch(
                 <font-awesome-icon icon="fas fa-trash" />
               </Button>
             </div>
-          </div>
-        </div>
+          </div> -->
+        <!-- </div> -->
 
         <!-- Direct DOM manipulation container -->
         <div id="elixir-container" class="elixir-manual-container mt-6"></div>
