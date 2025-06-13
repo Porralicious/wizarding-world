@@ -4,6 +4,8 @@ import 'tailwindcss'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
+import Tooltip from 'primevue/tooltip'
 import Aura from '@primeuix/themes/aura'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import { definePreset } from '@primeuix/themes'
@@ -26,6 +28,18 @@ import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 
 import App from './App.vue'
 import router from './router'
+
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import ProgressSpinner from 'primevue/progressspinner'
+import Message from 'primevue/message'
+import Badge from 'primevue/badge'
+import Tag from 'primevue/tag'
+import Dialog from 'primevue/dialog'
 
 library.add(faUserSecret)
 library.add(faFlask)
@@ -69,4 +83,16 @@ app.use(PrimeVue, {
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.use(VueQueryPlugin)
 
+app.component('DataTable', DataTable)
+app.component('Column', Column)
+app.component('Button', Button)
+app.component('InputText', InputText)
+app.component('IconField', IconField)
+app.component('InputIcon', InputIcon)
+app.component('ProgressSpinner', ProgressSpinner)
+app.component('Message', Message)
+app.component('Badge', Badge)
+app.component('Tag', Tag)
+app.component('Dialog', Dialog)
+app.directive('tooltip', Tooltip)
 app.mount('#app')

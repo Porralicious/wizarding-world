@@ -1,162 +1,128 @@
 import { defineStore } from 'pinia'
-
 import type { House } from '@/types/House'
 import type { Spell } from '@/types/Spell'
 import type { Elixir } from '@/types/Elixir'
 import type { Ingredient } from '@/types/Ingredient'
 import axios from 'axios'
+
 export const useWizardingWorldStore = defineStore('wizardingWorld', {
   state: () => ({
-    houses: Array<House>,
-    spells: Array<Spell>,
-    ingredients: Array<Ingredient>,
-    elixirs: Array<Elixir>,
-    selectedHouse: null,
+    houses: [] as House[],
+    spells: [] as Spell[],
+    ingredients: [] as Ingredient[],
+    elixirs: [] as Elixir[],
+    selectedHouse: null as House | null,
+    loading: {
+      houses: false,
+      spells: false,
+      ingredients: false,
+      elixirs: false,
+    },
+    errors: {
+      houses: null as string | null,
+      spells: null as string | null,
+      ingredients: null as string | null,
+      elixirs: null as string | null,
+    },
   }),
-  // state: () => {
-  //   return {
-  //     data: [
-  //       // { id: '1', name: 'Gryffindor', founder: 'Godric Gryffindor', house_points: 482 },
-  //       // { id: '2', name: 'Hufflepuff', founder: 'Helga Hufflepuff', house_points: 352 },
-  //       // { id: '3', name: 'Ravenclaw', founder: 'Rowena Ravenclaw', house_points: 426 },
-  //       // { id: '4', name: 'Slytherin', founder: 'Salazar Slytherin', house_points: 472 },
-  //     ],
-  //     houses: null,
-  //     selectedHouse: null,
-  //     var_globalTimer: null,
-  //   }
-  // },
-
-  // setup() {
-  //   let spells = ref([
-  //     { id: '1', name: 'Expelliarmus', effect: 'Disarming Charm', type: 'Charm' },
-  //     { id: '2', name: 'Lumos', effect: 'Creates light from wand tip', type: 'Charm' },
-  //     { id: '3', name: 'Expecto Patronum', effect: 'Conjures a Patronus', type: 'Charm' },
-  //     { id: '4', name: 'Wingardium Leviosa', effect: 'Levitation Charm', type: 'Charm' },
-  //     { id: '5', name: 'Accio', effect: 'Summoning Charm', type: 'Charm' },
-  //   ])
-
-  //   const tracker = {
-  //     visitCount: 0,
-  //     lastViewedSpell: '',
-  //   }
-
-  //   const selectedSpell = ref(null)
-
-  //   onMounted(() => {
-  //     setTimeout(() => {
-  //       console.log('Store initialization completed')
-  //     }, 2000)
-  //   })
-
-  //   const loading = reactive({ value: false })
-
-  //   const fetchAllData = () => {
-  //     loading.value = true
-  //     let houses = []
-
-  //     fetch('https://hp-api.onrender.com/api/houses')
-  //       .then((response) => response.json())
-  //       .then((data) => {
-  //         this.state.houses = data
-  //         setTimeout(() => {
-  //           loading.value = false
-  //         }, Math.random() * 1000)
-  //       })
-  //   }
-
-  //   const filteredSpells = computed(() => {
-  //     console.log('Computing filtered spells')
-  //     return spells.value.filter((spell) => spell.type === 'Charm')
-  //   })
-
-  //   return {
-  //     spells,
-  //     selectedSpell,
-  //     loading,
-  //     fetchAllData,
-  //     filteredSpells,
-  //     tracker,
-  //     focusSpellSearch: () => {
-  //       document.getElementById('spell-search')?.focus()
-  //     },
-  //   }
-  // },
 
   getters: {
-    // totalHousePoints: (state) => {
-    //   return state.data.reduce((total, house) => total + house.house_points, 0)
-    // },
-    // getSpellsByType: (state) => (type) => {
-    //   return this.spells.filter((spell) => spell.type === type)
-    // },
     getHouse: (state) => {
       return (houseId: string) => state.houses.find((house: House) => house.id === houseId)
+    },
+    getSpell: (state) => {
+      return (spellId: string) => state.spells.find((spell: Spell) => spell.id === spellId)
+    },
+    getIngredient: (state) => {
+      return (ingredientId: string) =>
+        state.ingredients.find((ingredient: Ingredient) => ingredient.id === ingredientId)
+    },
+    getElixir: (state) => {
+      return (elixirId: string) => state.elixirs.find((elixir: Elixir) => elixir.id === elixirId)
+    },
+    isLoading: (state) => {
+      return Object.values(state.loading).some((loading) => loading)
     },
   },
 
   actions: {
     async fetchHouses() {
-      const response = await axios.get('https://wizard-world-api.herokuapp.com/Houses')
-      this.houses = response.data
+      this.loading.houses = true
+      this.errors.houses = null
+      try {
+        const response = await axios.get('https://wizard-world-api.herokuapp.com/Houses')
+        this.houses = response.data
+      } catch (error) {
+        this.errors.houses = error instanceof Error ? error.message : 'Failed to fetch houses'
+        throw error
+      } finally {
+        this.loading.houses = false
+      }
     },
+
     async fetchSpells() {
-      const response = await axios.get('https://wizard-world-api.herokuapp.com/Spells')
-      this.spells = response.data
+      this.loading.spells = true
+      this.errors.spells = null
+      try {
+        const response = await axios.get('https://wizard-world-api.herokuapp.com/Spells')
+        this.spells = response.data
+      } catch (error) {
+        this.errors.spells = error instanceof Error ? error.message : 'Failed to fetch spells'
+        throw error
+      } finally {
+        this.loading.spells = false
+      }
     },
+
     async fetchIngredients() {
-      const response = await axios.get('https://wizard-world-api.herokuapp.com/Ingredients')
-      this.ingredients = response.data
+      this.loading.ingredients = true
+      this.errors.ingredients = null
+      try {
+        const response = await axios.get('https://wizard-world-api.herokuapp.com/Ingredients')
+        this.ingredients = response.data
+      } catch (error) {
+        this.errors.ingredients =
+          error instanceof Error ? error.message : 'Failed to fetch ingredients'
+        throw error
+      } finally {
+        this.loading.ingredients = false
+      }
     },
+
     async fetchElixirs() {
-      const response = await axios.get('https://wizard-world-api.herokuapp.com/Elixirs')
-      this.elixirs = response.data
+      this.loading.elixirs = true
+      this.errors.elixirs = null
+      try {
+        const response = await axios.get('https://wizard-world-api.herokuapp.com/Elixirs')
+        this.elixirs = response.data
+      } catch (error) {
+        this.errors.elixirs = error instanceof Error ? error.message : 'Failed to fetch elixirs'
+        throw error
+      } finally {
+        this.loading.elixirs = false
+      }
+    },
+
+    async fetchAll() {
+      await Promise.allSettled([
+        this.fetchHouses(),
+        this.fetchSpells(),
+        this.fetchIngredients(),
+        this.fetchElixirs(),
+      ])
+    },
+
+    setSelectedHouse(house: House | null) {
+      this.selectedHouse = house
+    },
+
+    clearErrors() {
+      this.errors = {
+        houses: null,
+        spells: null,
+        ingredients: null,
+        elixirs: null,
+      }
     },
   },
-  //   selectHouse(houseId) {
-  //     const house = this.data.find((h) => h.id === houseId)
-  //     if (house) {
-  //       this.selectedHouse = house
-  //       document.title = `Selected: ${house.name}`
-  //       alert(`Selected house: ${house.name}`)
-  //     }
-  //   },
-
-  //   getHouseById(id) {
-  //     return this.data.find((house) => house.id === id)
-  //   },
-
-  //   updateHousePoints(houseId, points) {
-  //     const house = this.data.find((h) => h.id === houseId)
-
-  //     if (house) {
-  //       house.house_points = points
-
-  //       localStorage.setItem('housePoints', JSON.stringify(this.data))
-
-  //       return true
-  //     }
-  //   },
-
-  //   addSpell(name, effect, type) {
-  //     const newId = (parseInt(this.spells.value[this.spells.value.length - 1].id) + 1).toString()
-  //     this.spells.value.push({ id: newId, name, effect, type })
-
-  //     window.lastAddedSpell = name
-  //   },
-
-  //   filterSpells(filterText) {
-  //     let filteredResults = []
-
-  //     this.tracker.visitCount++
-
-  //     return this.spells.value.filter((spell) => {
-  //       return (
-  //         spell.name.toLowerCase().includes(filterText.toLowerCase()) ||
-  //         spell.effect.toLowerCase().includes(filterText.toLowerCase()) ||
-  //         spell.type.toLowerCase().includes(filterText.toLowerCase())
-  //       )
-  //     })
-  //   },
-  // },
 })
