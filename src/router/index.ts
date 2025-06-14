@@ -43,6 +43,11 @@ const router = createRouter({
       name: 'elixirs',
       component: () => import('../views/ElixirsView.vue'),
     },
+    {
+      path: '/wizards',
+      name: 'wizards',
+      component: () => import('../views/WizardsView.vue'),
+    },
   ],
 })
 
