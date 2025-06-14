@@ -3,6 +3,7 @@ import type { House } from '@/types/House'
 import type { Spell } from '@/types/Spell'
 import type { Elixir } from '@/types/Elixir'
 import type { Ingredient } from '@/types/Ingredient'
+import type { Wizard } from '@/types/Wizard'
 import axios from 'axios'
 
 export const useWizardingWorldStore = defineStore('wizardingWorld', {
@@ -11,18 +12,21 @@ export const useWizardingWorldStore = defineStore('wizardingWorld', {
     spells: [] as Spell[],
     ingredients: [] as Ingredient[],
     elixirs: [] as Elixir[],
+    wizards: [] as Wizard[],
     selectedHouse: null as House | null,
     loading: {
       houses: false,
       spells: false,
       ingredients: false,
       elixirs: false,
+      wizards: false,
     },
     errors: {
       houses: null as string | null,
       spells: null as string | null,
       ingredients: null as string | null,
       elixirs: null as string | null,
+      wizards: null as string | null,
     },
   }),
 
@@ -39,6 +43,9 @@ export const useWizardingWorldStore = defineStore('wizardingWorld', {
     },
     getElixir: (state) => {
       return (elixirId: string) => state.elixirs.find((elixir: Elixir) => elixir.id === elixirId)
+    },
+    getWizard: (state) => {
+      return (wizardId: string) => state.wizards.find((wizard: Wizard) => wizard.id === wizardId)
     },
     isLoading: (state) => {
       return Object.values(state.loading).some((loading) => loading)
@@ -103,12 +110,27 @@ export const useWizardingWorldStore = defineStore('wizardingWorld', {
       }
     },
 
+    async fetchWizards() {
+      this.loading.wizards = true
+      this.errors.wizards = null
+      try {
+        const response = await axios.get('https://wizard-world-api.herokuapp.com/Wizards')
+        this.wizards = response.data
+      } catch (error) {
+        this.errors.wizards = error instanceof Error ? error.message : 'Failed to fetch wizards'
+        throw error
+      } finally {
+        this.loading.wizards = false
+      }
+    },
+
     async fetchAll() {
       await Promise.allSettled([
         this.fetchHouses(),
         this.fetchSpells(),
         this.fetchIngredients(),
         this.fetchElixirs(),
+        this.fetchWizards(),
       ])
     },
 
@@ -122,6 +144,7 @@ export const useWizardingWorldStore = defineStore('wizardingWorld', {
         spells: null,
         ingredients: null,
         elixirs: null,
+        wizards: null,
       }
     },
   },

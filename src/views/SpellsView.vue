@@ -19,6 +19,7 @@
       <!-- DataTable -->
       <DataTable
         v-else
+        v-model:filters="filters"
         :value="spells"
         :paginator="true"
         :rows="10"

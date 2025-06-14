@@ -26,6 +26,11 @@ const items = ref([
     icon: 'fas fa-flask',
     to: '/elixirs',
   },
+  {
+    label: 'Wizards',
+    icon: 'fas fa-hat-wizard',
+    to: '/wizards',
+  },
 ])
 
 const wizardingWorldStore = useWizardingWorldStore()
