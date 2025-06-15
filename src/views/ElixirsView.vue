@@ -32,10 +32,10 @@ var renderedElixirs = []
 onMounted(() => {
   document.title = 'Magical Elixirs'
 
-  window.addEventListener('resize', () => {
-    console.log('Window resized')
-    refreshTable()
-  })
+  // window.addEventListener('resize', () => {
+  //   console.log('Window resized')
+  //   refreshTable()
+  // })
 
   // Immediately render initial elixirs to DOM directly
 })

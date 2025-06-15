@@ -53,7 +53,7 @@
                 severity="secondary"
                 outlined
               >
-                <font-awesome-icon icon="fas fa-rotate-right" />
+                <FontAwesomeIcon icon="fas fa-rotate-right" />
               </Button>
             </div>
           </div>
@@ -81,7 +81,6 @@
           <template #body="{ data }">
             <div class="flex gap-2">
               <Button
-                icon="pi pi-eye"
                 size="small"
                 text
                 @click="viewWizard(data)"
@@ -199,6 +198,7 @@ const truncateText = (text: string, maxLength: number): string => {
 
 // Lifecycle
 onMounted(() => {
+   document.title = 'Powerful Wizards'
   if (store.wizards.length === 0) {
     loadWizards()
   }
