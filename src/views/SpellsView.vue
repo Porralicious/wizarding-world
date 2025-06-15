@@ -12,7 +12,9 @@
       <Message v-else-if="store.errors.spells" severity="error" class="mb-4">
         {{ store.errors.spells }}
         <template #action>
-          <Button icon="pi pi-refresh" text @click="loadSpells" :loading="store.loading.spells" />
+          <Button text @click="loadSpells" :loading="store.loading.spells" >
+            <FontAwesomeIcon icon="fas fa-rotate-right" />
+          </Button>
         </template>
       </Message>
 
@@ -27,12 +29,20 @@
           <div class="flex justify-between items-center">
             <h2 class="text-xl font-semibold">All Spells ({{ spells.length }})</h2>
             <div class="flex gap-2">
+              <Button type="button" outlined @click="clearFilter()">
+                <FontAwesomeIcon icon="fas fa-filter-circle-xmark"></FontAwesomeIcon>
+              </Button>
               <IconField iconPosition="left">
                 <InputIcon class="pi pi-search" />
                 <InputText v-model="filters['global'].value" placeholder="Search spells..." class="w-64" />
               </IconField>
-              <Button icon="pi pi-refresh" @click="loadSpells" :loading="store.loading.spells" severity="secondary"
-                outlined />
+              <Button 
+                @click="loadSpells" 
+                :loading="store.loading.spells" 
+                severity="secondary"
+                outlined >
+                  <FontAwesomeIcon icon="fas fa-rotate-right" />
+              </Button>
             </div>
           </div>
         </template>
@@ -50,7 +60,7 @@
           </template>
         </Column>
 
-        <Column field="type" header="Type" sortable style="min-width: 120px">
+        <Column field="type" header="Type" :showFilterMatchModes="false" sortable style="min-width: 120px">
           <template #body="{ data }">
             <Tag v-if="data.type" :value="data.type" :severity="getTypeSeverity(data.type)" />
             <span v-else class="text-gray-400 italic">Unknown</span>
@@ -103,9 +113,23 @@
         <Column header="Actions" style="min-width: 100px">
           <template #body="{ data }">
             <div class="flex gap-2">
-              <Button icon="pi pi-eye" size="small" text @click="viewSpell(data)" v-tooltip="'View Details'" />
-              <Button icon="pi pi-heart" size="small" text severity="danger" @click="toggleFavorite(data)"
-                v-tooltip="'Add to Favorites'" />
+              <Button
+                size="small"
+                text
+                @click="viewSpell(data)"
+                v-tooltip="'View Details'"
+              >
+                <font-awesome-icon icon="fas fa-eye" />
+              </Button>
+              <Button
+                size="small"
+                text
+                severity="danger"
+                @click="toggleFavorite(data)"
+                v-tooltip="'Add to Favorites'"
+              >
+                <font-awesome-icon icon="fas fa-heart" />
+              </Button>
             </div>
           </template>
         </Column>
@@ -139,6 +163,10 @@
             <Badge v-if="selectedSpell.incantation" :value="selectedSpell.incantation" severity="info"
               class="font-mono" />
           </div>
+          <div>
+            <label class="font-semibold">Can be verbal:</label>
+            <p>{{ selectedSpell.canBeVerbal }}</p>
+          </div>
           <div v-if="selectedSpell.light">
             <label class="font-semibold">Light:</label>
             <div class="flex items-center gap-2">
@@ -153,6 +181,11 @@
           <label class="font-semibold">Effect:</label>
           <p class="mt-2">{{ selectedSpell.effect }}</p>
         </div>
+         <div>
+            <label class="font-semibold">Creator:</label>
+            <p v-if="selectedSpell.creator">{{ selectedSpell.creator }}</p>
+            <p v-else>Unknown</p>
+          </div>
       </div>
     </Dialog>
   </div>
@@ -161,7 +194,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useWizardingWorldStore } from '@/stores/wizardingWorld'
-import { FilterMatchMode } from '@primevue/core/api'
+import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 import { SpellLight, SpellType, type Spell } from '@/types/Spell'
 
 // PrimeVue Components
@@ -177,7 +210,7 @@ import Badge from 'primevue/badge'
 import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'
 import MultiSelect from 'primevue/multiselect'
-
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Select from 'primevue/select';
 
 
@@ -186,16 +219,21 @@ const store = useWizardingWorldStore()
 // Reactive data
 const showSpellDialog = ref(false)
 const selectedSpell = ref<Spell | null>(null)
+const filters = ref();
 
 // Filters for the DataTable
-const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  incantation: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-  type: { value: null, matchMode: FilterMatchMode.EQUALS },
-  light: { value: null, matchMode: FilterMatchMode.EQUALS },
-  effect: { value: null, matchMode: FilterMatchMode.CONTAINS }
-});
+const initFilters = () => {
+    filters.value = {
+       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+        incantation: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+        type: { value: null, matchMode: FilterMatchMode.IN },
+        light: { value: null, matchMode: FilterMatchMode.EQUALS },
+        effect: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    };
+};
+
+initFilters();
 const spellTypes = Object.values(SpellType).map((value) => ({
   label: value,
   value,
@@ -215,7 +253,9 @@ const loadSpells = async () => {
     console.error('Failed to load spells:', error)
   }
 }
-
+const clearFilter = () => {
+  initFilters();
+};
 const viewSpell = (spell: Spell) => {
   selectedSpell.value = spell
   showSpellDialog.value = true
@@ -246,6 +286,7 @@ const truncateText = (text: string, maxLength: number): string => {
 
 // Lifecycle
 onMounted(() => {
+   document.title = 'Stunning Spells'
   if (store.spells.length === 0) {
     loadSpells()
   }
