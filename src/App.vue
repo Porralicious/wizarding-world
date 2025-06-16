@@ -3,7 +3,6 @@ import { RouterLink, RouterView } from 'vue-router'
 import { ref } from 'vue'
 import Menubar from 'primevue/menubar'
 import { useWizardingWorldStore } from '@/stores/wizardingWorld'
-import { onMounted } from 'vue'
 
 const items = ref([
   {
@@ -35,19 +34,13 @@ const items = ref([
 
 const wizardingWorldStore = useWizardingWorldStore()
 
-onMounted(() => {
-  // wizardingWorldStore.fetchHouses()
-  // wizardingWorldStore.fetchIngredients()
-  // wizardingWorldStore.fetchElixirs()
-  // wizardingWorldStore.fetchSpells()
-})
 </script>
 
 <template>
   <div class="app-container">
-    <header class="bg-white shadow-md">
+    <header>
       <div class="container mx-auto px-4 py-2">
-        <Menubar :model="items" class="custom-menubar">
+        <Menubar :model="items">
           <template #item="{ item }">
             <router-link
               v-if="item.to"
@@ -57,7 +50,7 @@ onMounted(() => {
             >
               <a :href="href" @click="navigate" :class="[isActive ? 'router-link-active' : '']">
                 <font-awesome-icon :icon="item.icon" />
-                <span class="p-menuitem-text">{{ item.label }}</span>
+                <span class="p-menuitem-text ml-3">{{ item.label }}</span>
               </a>
             </router-link>
           </template>
@@ -70,7 +63,7 @@ onMounted(() => {
     </main>
   </div>
 </template>
-
+<!-- 
 <style>
 @tailwind base;
 @tailwind components;
@@ -135,4 +128,4 @@ body {
   --surface-e: #fff;
   --surface-f: #fff;
 }
-</style>
+</style> -->

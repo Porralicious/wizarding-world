@@ -35,6 +35,14 @@ const menuCards = ref([
     color: 'bg-primary',
     visible: false,
   },
+  {
+    title: 'Wizards',
+    description: 'Explore powerful wizards from the wizarding world.',
+    icon: 'fas fa-wizard',
+    route: '/wizards',
+    color: 'bg-primary',
+    visible: false,
+  },
 ])
 
 const navigateTo = (route) => {
@@ -78,6 +86,10 @@ watch(
   { deep: true },
 )
 
+function toggleDarkMode() {
+    document.documentElement.classList.toggle('my-app-dark');
+}
+
 function updateCardColors() {
   if (isDarkMode) {
     menuCards.value[0].color = 'bg-blue-800'
@@ -103,7 +115,7 @@ function updateCardColors() {
         </p>
 
         <button
-          @click="((isDarkMode = !isDarkMode), updateCardColors())"
+          @click="((isDarkMode = !isDarkMode), toggleDarkMode())"
           style="
             background-color: #4f46e5;
             color: white;
@@ -124,13 +136,6 @@ function updateCardColors() {
           :key="index"
           class="card-container w-full flex justify-center"
           :class="{ 'card-visible': card.visible }"
-          v-on="{
-            mouseenter: () => {
-              console.log('Mouse entered card', index)
-              updateCardColors()
-            },
-            mouseleave: () => console.log('Mouse left card', index),
-          }"
         >
           <Card
             class="w-full max-w-md cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col"
