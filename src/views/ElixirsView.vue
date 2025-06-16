@@ -11,7 +11,9 @@ import { ElixirDifficulty } from '@/types/Elixir'
 import type { Elixir } from '@/types/Elixir'
 import VirtualScroller from 'primevue/virtualscroller'
 import { useElixirs } from '@/composables/useElixirs'
+import { useRouter } from 'vue-router'
 const { data, isLoading, error, refetch } = useElixirs()
+const router = useRouter()
 let selectedElixir = {
   id: '',
   name: '',
@@ -161,8 +163,8 @@ watch(
 )
 
 // Directly mutating an object
-function selectElixir(elixir) {
-  selectedElixir = elixir
+function viewElixir(elixir) {
+  router.push({ name: 'ElixirDetail', params: { id: elixir.id } })
 }
 
 // Using both DOM API and Vue reactivity - inconsistent
@@ -242,7 +244,7 @@ function deleteElixir(id) {
               <p v-html="`Effect: ${item.effect}`"></p>
               <p>Difficulty: {{ item.difficulty }}</p>
               <div class="action-buttons">
-                <Button severity="info" @click="selectElixir(item)">
+                <Button severity="info" @click="viewElixir(item)">
                   <font-awesome-icon icon="fas fa-circle-info" />
                 </Button>
                 <Button icon="pi pi-trash" severity="danger" @click="deleteElixir(item.id)">
