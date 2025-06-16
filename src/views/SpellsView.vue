@@ -4,30 +4,30 @@
       <h1 class="text-3xl font-bold mb-6">Spells</h1>
 
       <!-- Loading State -->
-      <div v-if="store.loading.spells" class="flex justify-center items-center py-8">
+      <div v-if="isLoading" class="flex justify-center items-center py-8">
         <ProgressSpinner />
       </div>
 
       <!-- Error State -->
-      <Message v-else-if="store.errors.spells" severity="error" class="mb-4">
-        {{ store.errors.spells }}
+      <Message v-else-if="error" severity="error" class="mb-4">
+        {{ error }}
         <template #action>
-          <Button text @click="loadSpells" :loading="store.loading.spells" >
+          <Button text @click="refetch" :loading="isLoading" >
             <FontAwesomeIcon icon="fas fa-rotate-right" />
           </Button>
         </template>
       </Message>
 
       <!-- DataTable -->
-      <DataTable v-else v-model:filters="filters" :value="spells" :paginator="true" :rows="10"
-        :rowsPerPageOptions="[5, 10, 20, 50]" :totalRecords="spells.length"
+      <DataTable v-else v-model:filters="filters" :value="data" :paginator="true" :rows="10"
+        :rowsPerPageOptions="[5, 10, 20, 50]" :totalRecords="data.length"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-        currentPageReportTemplate="{first} to {last} of {totalRecords}" :loading="store.loading.spells"
+        currentPageReportTemplate="{first} to {last} of {totalRecords}" :loading="isLoading"
         filterDisplay="menu" :globalFilterFields="['name', 'type', 'incantation']" class="p-datatable-sm" stripedRows
         responsiveLayout="scroll">
         <template #header>
           <div class="flex justify-between items-center">
-            <h2 class="text-xl font-semibold">All Spells ({{ spells.length }})</h2>
+            <h2 class="text-xl font-semibold">All Spells ({{ data.length }})</h2>
             <div class="flex gap-2">
               <Button type="button" outlined @click="clearFilter()">
                 <FontAwesomeIcon icon="fas fa-filter-circle-xmark"></FontAwesomeIcon>
@@ -37,8 +37,8 @@
                 <InputText v-model="filters['global'].value" placeholder="Search spells..." class="w-64" />
               </IconField>
               <Button 
-                @click="loadSpells" 
-                :loading="store.loading.spells" 
+                @click="refetch" 
+                :loading="isLoading" 
                 severity="secondary"
                 outlined >
                   <FontAwesomeIcon icon="fas fa-rotate-right" />
@@ -138,7 +138,7 @@
           <div class="text-center py-8">
             <i class="pi pi-search text-4xl text-gray-400 mb-4"></i>
             <p class="text-gray-500">No spells found</p>
-            <Button label="Load Spells" icon="pi pi-refresh" @click="loadSpells" class="mt-4" />
+            <Button label="Load Spells" icon="pi pi-refresh" @click="refetch" class="mt-4" />
           </div>
         </template>
       </DataTable>
@@ -192,8 +192,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useWizardingWorldStore } from '@/stores/wizardingWorld'
+import { ref, onMounted } from 'vue'
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 import { SpellLight, SpellType, type Spell } from '@/types/Spell'
 
@@ -212,10 +211,8 @@ import Dialog from 'primevue/dialog'
 import MultiSelect from 'primevue/multiselect'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Select from 'primevue/select';
-
-
-const store = useWizardingWorldStore()
-
+import { useSpells } from '@/composables/useSpells'
+const { data, isLoading, error, refetch } = useSpells()
 // Reactive data
 const showSpellDialog = ref(false)
 const selectedSpell = ref<Spell | null>(null)
@@ -243,16 +240,7 @@ const spellLights = Object.values(SpellLight).map((value) => ({
   label: value,
   value,
 }))
-// Computed
-const spells = computed(() => store.spells)
-// Methods
-const loadSpells = async () => {
-  try {
-    await store.fetchSpells()
-  } catch (error) {
-    console.error('Failed to load spells:', error)
-  }
-}
+
 const clearFilter = () => {
   initFilters();
 };
@@ -287,9 +275,6 @@ const truncateText = (text: string, maxLength: number): string => {
 // Lifecycle
 onMounted(() => {
    document.title = 'Stunning Spells'
-  if (store.spells.length === 0) {
-    loadSpells()
-  }
 })
 </script>
 

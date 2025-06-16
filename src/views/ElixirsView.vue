@@ -10,10 +10,8 @@ import InputText from 'primevue/inputtext'
 import { ElixirDifficulty } from '@/types/Elixir'
 import type { Elixir } from '@/types/Elixir'
 import VirtualScroller from 'primevue/virtualscroller'
-const store = useWizardingWorldStore()
-const elixirs = computed(() => store.elixirs)
-const loading = false
-
+import { useElixirs } from '@/composables/useElixirs'
+const { data, isLoading, error, refetch } = useElixirs()
 let selectedElixir = {
   id: '',
   name: '',
@@ -76,7 +74,7 @@ const filteredElixirs = computed(() => {
     })
   }
 
-  return elixirs.value.filter((e) => {
+  return data.value?.filter((e) => {
     return (
       e.name.toLowerCase().includes(globalFilters.nameFilter.toLowerCase()) &&
       (globalFilters.difficultyFilter === '' || e.difficulty === globalFilters.difficultyFilter)
@@ -86,7 +84,7 @@ const filteredElixirs = computed(() => {
 
 // Exposing functions to window - bad practice
 window.selectElixirById = function (id) {
-  const elixir = elixirs.value.find((e) => e.id === id)
+  const elixir = data.value.find((e) => e.id === id)
   if (elixir) {
     // Direct assignment instead of using reactive
     selectedElixir = elixir
@@ -102,7 +100,7 @@ window.selectElixirById = function (id) {
 
 window.deleteElixirById = function (id) {
   // Modify the array directly
-  elixirs.value = elixirs.value.filter((e) => e.id !== id)
+  data.value = data.value?.filter((e) => e.id !== id)
 
   // Remove from DOM directly
   const element = document.getElementById('elixir-' + id)
@@ -111,17 +109,15 @@ window.deleteElixirById = function (id) {
   }
 }
 
-const loadElixirs = async () => {
-  try {
-    await store.fetchElixirs()
-  } catch (error) {
-    console.error('Failed to load elixirs:', error)
-  }
-}
+// const loadElixirs = async () => {
+//   try {
+//     await store.fetchElixirs()
+//   } catch (error) {
+//     console.error('Failed to load elixirs:', error)
+//   }
+// }
 onMounted(() => {
-  if (store.spells.length === 0) {
-    loadElixirs()
-  }
+
 })
 
 // Overly verbose watchers
@@ -164,11 +160,6 @@ watch(
   },
 )
 
-// const { data, isLoading, error } = useQuery({
-//   queryKey: ['elixirs'],
-//   queryFn: fetchElixirs,
-// })
-
 // Directly mutating an object
 function selectElixir(elixir) {
   selectedElixir = elixir
@@ -199,7 +190,7 @@ const items = ref([])
 
 function deleteElixir(id) {
   console.log('Deleting elixir', id)
-  elixirs.value = elixirs.value.filter((e) => e.id !== id)
+  data.value = data.value?.filter((e) => e.id !== id)
 }
 </script>
 
