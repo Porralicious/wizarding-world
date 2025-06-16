@@ -4,15 +4,15 @@
       <h1 class="text-3xl font-bold mb-6">Wizards</h1>
 
       <!-- Loading State -->
-      <div v-if="store.loading.wizards" class="flex justify-center items-center py-8">
+      <div v-if="isLoading" class="flex justify-center items-center py-8">
         <ProgressSpinner />
       </div>
 
       <!-- Error State -->
-      <Message v-else-if="store.errors.wizards" severity="error" class="mb-4">
-        {{ store.errors.wizards }}
+      <Message v-else-if="error" severity="error" class="mb-4">
+        {{ error }}
         <template #action>
-          <Button icon="pi pi-refresh" text @click="loadWizards" :loading="store.loading.wizards" />
+          <Button icon="pi pi-refresh" text @click="refetch" :loading="isLoading" />
         </template>
       </Message>
 
@@ -20,14 +20,14 @@
       <DataTable
         v-else
         v-model:filters="filters"
-        :value="wizards"
+        :value="data"
         :paginator="true"
         :rows="10"
         :rowsPerPageOptions="[5, 10, 20, 50]"
-        :totalRecords="wizards.length"
+        :totalRecords="data.length"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
         currentPageReportTemplate="{first} to {last} of {totalRecords}"
-        :loading="store.loading.spells"
+        :loading="isLoading"
         filterDisplay="menu"
         :globalFilterFields="['firstName', 'lastName']"
         class="p-datatable-sm"
@@ -36,7 +36,7 @@
       >
         <template #header>
           <div class="flex justify-between items-center">
-            <h2 class="text-xl font-semibold">All Wizards ({{ wizards.length }})</h2>
+            <h2 class="text-xl font-semibold">All Wizards ({{ data.length }})</h2>
             <div class="flex gap-2">
               <div class="p-input-icon-left">
                 <!-- <InputIcon class="pi pi-search" /> -->
@@ -48,8 +48,8 @@
                 />
               </div>
               <Button
-                @click="loadWizards"
-                :loading="store.loading.wizards"
+                @click="refetch"
+                :loading="isLoading"
                 severity="secondary"
                 outlined
               >
@@ -141,7 +141,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useWizardingWorldStore } from '@/stores/wizardingWorld'
 import { FilterMatchMode } from '@primevue/core/api'
 import type { Wizard } from '@/types/Wizard'
 
@@ -157,8 +156,9 @@ import Badge from 'primevue/badge'
 
 import Dialog from 'primevue/dialog'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { useWizards } from '@/composables/useWizards'
 
-const store = useWizardingWorldStore()
+const { data, isLoading, error, refetch } = useWizards()
 
 // Reactive data
 const showWizardDialog = ref(false)
@@ -168,18 +168,6 @@ const selectedWizard = ref<Wizard | null>(null)
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
-
-// Computed
-const wizards = computed(() => store.wizards)
-
-// Methods
-const loadWizards = async () => {
-  try {
-    await store.fetchWizards()
-  } catch (error) {
-    console.error('Failed to load wizards:', error)
-  }
-}
 
 const viewWizard = (wizard: Wizard) => {
   selectedWizard.value = wizard
@@ -198,10 +186,7 @@ const truncateText = (text: string, maxLength: number): string => {
 
 // Lifecycle
 onMounted(() => {
-   document.title = 'Powerful Wizards'
-  if (store.wizards.length === 0) {
-    loadWizards()
-  }
+  document.title = 'Powerful Wizards'
 })
 </script>
 

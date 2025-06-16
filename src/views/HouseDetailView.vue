@@ -4,9 +4,9 @@
   <div></div>
 </template>
 <script setup lang="ts">
-import { useWizardingWorldStore } from '@/stores'
+import { useHouse } from '@/composables/useHouses'
 import { useRoute } from 'vue-router'
-const wizardingStore = useWizardingWorldStore()
+
 const route = useRoute()
-const house = wizardingStore.getHouse(route.params.id)
+const { data:house , isLoading , error} = useHouse(route.params.id)
 </script>
