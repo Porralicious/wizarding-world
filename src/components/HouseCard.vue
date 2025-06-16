@@ -1,5 +1,5 @@
 <template>
-  <Card class="house-card" @click="goToHouseDetail">
+  <Card class="house-card">
     <template #title>{{ house.name }}</template>
     <template #content>
       <p class="m-0">Founder: {{ house.founder }}</p>
@@ -15,11 +15,7 @@ import { defineProps } from 'vue'
 const props = defineProps<{
   house: House
 }>()
-const router = useRouter()
 
-const goToHouseDetail = () => {
-  router.push({ name: 'house-detail', params: { id: props.house.id } })
-}
 </script>
 
 <style scoped>
