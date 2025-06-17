@@ -43,7 +43,7 @@ const auth = useAuthStore()
 
 function handleLogin() {
   if (auth.login(username.value, password.value)) {
-    router.push('/') // or dynamic route based on role
+    router.push('/')
   } else {
     error.value = 'Invalid username or password.'
   }
