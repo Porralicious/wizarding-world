@@ -20,14 +20,14 @@
 
       <!-- DataTable -->
       <DataTable v-else v-model:filters="filters" :value="filteredSpells" :paginator="true" :rows="10"
-        :rowsPerPageOptions="[5, 10, 20, 50]" :totalRecords="data.length"
+        :rowsPerPageOptions="[5, 10, 20, 50]" :totalRecords="filteredSpells.length"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
         currentPageReportTemplate="{first} to {last} of {totalRecords}" :loading="isLoading" filterDisplay="menu"
         :globalFilterFields="['name', 'type', 'incantation']" class="p-datatable-sm" stripedRows
         responsiveLayout="scroll">
         <template #header>
           <div class="flex justify-between items-center">
-            <h2 class="text-xl font-semibold">All Spells ({{ data.length }})</h2>
+            <h2 class="text-xl font-semibold">All Spells ({{ filteredSpells.length }})</h2>
             <div class="flex gap-2">
               <Button type="button" outlined @click="filterByFavourites()">
                 <FontAwesomeIcon icon="fas fa-heart"></FontAwesomeIcon>
@@ -108,8 +108,9 @@
               <Button size="small" text @click="viewSpell(data)" v-tooltip="'View Details'">
                 <FontAwesomeIcon icon="fas fa-eye" />
               </Button>
-              <Button size="small" text severity="danger" @click="toggleFavourite(data.id)" v-tooltip="'Add to Favorites'">
-                <FontAwesomeIcon :icon="isFavourite(data.id)? 'fas fa-heart' : 'far fa-heart'" />
+              <Button size="small" text severity="danger" @click="toggleFavourite(data.id)"
+                v-tooltip="'Add to Favorites'">
+                <FontAwesomeIcon :icon="isFavourite(data.id) ? 'fas fa-heart' : 'far fa-heart'" />
               </Button>
             </div>
           </template>
