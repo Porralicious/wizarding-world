@@ -9,8 +9,8 @@
     <template v-else>
         <Panel :header="elixir.name">
             <template #icons>
-                <Button icon="pi pi-cog" severity="secondary" rounded text @click="toggle">
-                    <FontAwesomeIcon icon="fas fa-heart"/>
+                <Button severity="danger" rounded text @click="toggleFavourite(elixir.id)">
+                     <FontAwesomeIcon :icon="isFavourite(elixir.id)? 'fas fa-heart' : 'far fa-heart'" />
                 </Button>
             </template>
 
@@ -55,7 +55,8 @@ import Chip from 'primevue/chip'
 import { useRoute } from 'vue-router'
 import { useElixir } from '@/composables/useElixirs'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-
+import { useFavourites } from '@/composables/useFavourites'
+const { toggleFavourite, isFavourite } = useFavourites('elixirs')
 const route = useRoute()
 const { data:elixir , isLoading , error} = useElixir(route.params.id)
 </script>

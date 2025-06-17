@@ -17,42 +17,23 @@
       </Message>
 
       <!-- DataTable -->
-      <DataTable
-        v-else
-        v-model:filters="filters"
-        :value="data"
-        :paginator="true"
-        :rows="10"
-        :rowsPerPageOptions="[5, 10, 20, 50]"
-        :totalRecords="data.length"
+      <DataTable v-else v-model:filters="filters" :value="filteredSpells" :paginator="true" :rows="10"
+        :rowsPerPageOptions="[5, 10, 20, 50]" :totalRecords="filteredSpells.length"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-        currentPageReportTemplate="{first} to {last} of {totalRecords}"
-        :loading="isLoading"
-        filterDisplay="menu"
-        :globalFilterFields="['firstName', 'lastName']"
-        class="p-datatable-sm"
-        stripedRows
-        responsiveLayout="scroll"
-      >
+        currentPageReportTemplate="{first} to {last} of {totalRecords}" :loading="isLoading" filterDisplay="menu"
+        :globalFilterFields="['firstName', 'lastName']" class="p-datatable-sm" stripedRows responsiveLayout="scroll">
         <template #header>
           <div class="flex justify-between items-center">
-            <h2 class="text-xl font-semibold">All Wizards ({{ data.length }})</h2>
+            <h2 class="text-xl font-semibold">All Wizards ({{ filteredSpells.length }})</h2>
             <div class="flex gap-2">
+              <Button type="button" outlined @click="filterByFavourites()">
+                <FontAwesomeIcon icon="fas fa-heart"></FontAwesomeIcon>
+              </Button>
               <div class="p-input-icon-left">
-                <!-- <InputIcon class="pi pi-search" /> -->
                 <FontAwesomeIcon icon="fas fa-magnifying-glass" />
-                <InputText
-                  v-model="filters['global'].value"
-                  placeholder="Search wizards..."
-                  class="w-64"
-                />
+                <InputText v-model="filters['global'].value" placeholder="Search wizards..." class="w-64" />
               </div>
-              <Button
-                @click="refetch"
-                :loading="isLoading"
-                severity="secondary"
-                outlined
-              >
+              <Button @click="refetch" :loading="isLoading" severity="secondary" outlined>
                 <FontAwesomeIcon icon="fas fa-rotate-right" />
               </Button>
             </div>
@@ -80,22 +61,12 @@
         <Column header="Actions" style="min-width: 100px">
           <template #body="{ data }">
             <div class="flex gap-2">
-              <Button
-                size="small"
-                text
-                @click="viewWizard(data)"
-                v-tooltip="'View Details'"
-              >
+              <Button size="small" text @click="viewWizard(data)" v-tooltip="'View Details'">
                 <font-awesome-icon icon="fas fa-eye" />
               </Button>
-              <Button
-                size="small"
-                text
-                severity="danger"
-                @click="toggleFavorite(data)"
-                v-tooltip="'Add to Favorites'"
-              >
-                <font-awesome-icon icon="fas fa-heart" />
+              <Button size="small" text severity="danger" @click="toggleFavourite(data.id)"
+                v-tooltip="'Add to Favorites'">
+                <FontAwesomeIcon :icon="isFavourite(data.id) ? 'fas fa-heart' : 'far fa-heart'" />
               </Button>
             </div>
           </template>
@@ -105,8 +76,8 @@
           <div class="text-center py-8">
             <i class="pi pi-search text-4xl text-gray-400 mb-4"></i>
             <p class="text-gray-500">No wizards found</p>
-            <Button severity="info" @click="loadWizards" class="mt-4">
-              <font-awesome-icon icon="fas fa-rotate-right" v-tooltip="'Reload'" />
+            <Button severity="info" @click="refetch" class="mt-4">
+              <FontAwesomeIcon icon="fas fa-rotate-right" v-tooltip="'Reload'" />
             </Button>
           </div>
         </template>
@@ -114,12 +85,8 @@
     </div>
   </div>
   <!-- Wizard Details Dialog -->
-  <Dialog
-    v-model:visible="showWizardDialog"
-    :header="selectedWizard?.firstName || 'Wizard Details'"
-    :style="{ width: '50vw' }"
-    :modal="true"
-  >
+  <Dialog v-model:visible="showWizardDialog" :header="selectedWizard?.firstName || 'Wizard Details'"
+    :style="{ width: '50vw' }" :modal="true">
     <div v-if="selectedWizard" class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -157,9 +124,11 @@ import Badge from 'primevue/badge'
 import Dialog from 'primevue/dialog'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useWizards } from '@/composables/useWizards'
+import { useFavourites } from '@/composables/useFavourites'
+const { toggleFavourite, isFavourite } = useFavourites('wizards')
 
 const { data, isLoading, error, refetch } = useWizards()
-
+const showOnlyFavourites = ref(false)
 // Reactive data
 const showWizardDialog = ref(false)
 const selectedWizard = ref<Wizard | null>(null)
@@ -174,9 +143,16 @@ const viewWizard = (wizard: Wizard) => {
   showWizardDialog.value = true
 }
 
-const toggleFavorite = (wizard: Wizard) => {
-  // Implement favorite functionality
-  console.log('Toggle favorite for:', wizard.firstName + wizard.lastName)
+const filteredSpells = computed(() => {
+  if (!data.value) return []
+  if (showOnlyFavourites.value) {
+    return data.value.filter(spell => isFavourite(spell.id))
+  }
+  return data.value
+})
+
+const filterByFavourites = () => {
+  showOnlyFavourites.value = !showOnlyFavourites.value
 }
 
 const truncateText = (text: string, maxLength: number): string => {
