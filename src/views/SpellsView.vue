@@ -12,23 +12,26 @@
       <Message v-else-if="error" severity="error" class="mb-4">
         {{ error }}
         <template #action>
-          <Button text @click="refetch" :loading="isLoading" >
+          <Button text @click="refetch" :loading="isLoading">
             <FontAwesomeIcon icon="fas fa-rotate-right" />
           </Button>
         </template>
       </Message>
 
       <!-- DataTable -->
-      <DataTable v-else v-model:filters="filters" :value="data" :paginator="true" :rows="10"
+      <DataTable v-else v-model:filters="filters" :value="filteredSpells" :paginator="true" :rows="10"
         :rowsPerPageOptions="[5, 10, 20, 50]" :totalRecords="data.length"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-        currentPageReportTemplate="{first} to {last} of {totalRecords}" :loading="isLoading"
-        filterDisplay="menu" :globalFilterFields="['name', 'type', 'incantation']" class="p-datatable-sm" stripedRows
+        currentPageReportTemplate="{first} to {last} of {totalRecords}" :loading="isLoading" filterDisplay="menu"
+        :globalFilterFields="['name', 'type', 'incantation']" class="p-datatable-sm" stripedRows
         responsiveLayout="scroll">
         <template #header>
           <div class="flex justify-between items-center">
             <h2 class="text-xl font-semibold">All Spells ({{ data.length }})</h2>
             <div class="flex gap-2">
+              <Button type="button" outlined @click="filterByFavourites()">
+                <FontAwesomeIcon icon="fas fa-heart"></FontAwesomeIcon>
+              </Button>
               <Button type="button" outlined @click="clearFilter()">
                 <FontAwesomeIcon icon="fas fa-filter-circle-xmark"></FontAwesomeIcon>
               </Button>
@@ -36,12 +39,8 @@
                 <InputIcon class="pi pi-search" />
                 <InputText v-model="filters['global'].value" placeholder="Search spells..." class="w-64" />
               </IconField>
-              <Button 
-                @click="refetch" 
-                :loading="isLoading" 
-                severity="secondary"
-                outlined >
-                  <FontAwesomeIcon icon="fas fa-rotate-right" />
+              <Button @click="refetch" :loading="isLoading" severity="secondary" outlined>
+                <FontAwesomeIcon icon="fas fa-rotate-right" />
               </Button>
             </div>
           </div>
@@ -87,16 +86,9 @@
             <span v-else class="text-gray-400 italic">No light</span>
           </template>
           <template #filter="{ filterModel, filterCallback }">
-            <Select 
-              v-model="filterModel.value" 
-              @change="filterCallback()" 
-              :options="spellLights" 
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Select One" 
-              style="min-width: 12rem" 
-              :showClear="true">
-                   
+            <Select v-model="filterModel.value" @change="filterCallback()" :options="spellLights" optionLabel="label"
+              optionValue="value" placeholder="Select One" style="min-width: 12rem" :showClear="true">
+
             </Select>
           </template>
         </Column>
@@ -113,22 +105,11 @@
         <Column header="Actions" style="min-width: 100px">
           <template #body="{ data }">
             <div class="flex gap-2">
-              <Button
-                size="small"
-                text
-                @click="viewSpell(data)"
-                v-tooltip="'View Details'"
-              >
-                <font-awesome-icon icon="fas fa-eye" />
+              <Button size="small" text @click="viewSpell(data)" v-tooltip="'View Details'">
+                <FontAwesomeIcon icon="fas fa-eye" />
               </Button>
-              <Button
-                size="small"
-                text
-                severity="danger"
-                @click="toggleFavorite(data)"
-                v-tooltip="'Add to Favorites'"
-              >
-                <font-awesome-icon icon="fas fa-heart" />
+              <Button size="small" text severity="danger" @click="toggleFavourite(data.id)" v-tooltip="'Add to Favorites'">
+                <FontAwesomeIcon :icon="isFavourite(data.id)? 'fas fa-heart' : 'far fa-heart'" />
               </Button>
             </div>
           </template>
@@ -181,18 +162,18 @@
           <label class="font-semibold">Effect:</label>
           <p class="mt-2">{{ selectedSpell.effect }}</p>
         </div>
-         <div>
-            <label class="font-semibold">Creator:</label>
-            <p v-if="selectedSpell.creator">{{ selectedSpell.creator }}</p>
-            <p v-else>Unknown</p>
-          </div>
+        <div>
+          <label class="font-semibold">Creator:</label>
+          <p v-if="selectedSpell.creator">{{ selectedSpell.creator }}</p>
+          <p v-else>Unknown</p>
+        </div>
       </div>
     </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { FilterMatchMode, FilterOperator } from '@primevue/core/api'
 import { SpellLight, SpellType, type Spell } from '@/types/Spell'
 
@@ -212,22 +193,26 @@ import MultiSelect from 'primevue/multiselect'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Select from 'primevue/select';
 import { useSpells } from '@/composables/useSpells'
+import { useFavourites } from '@/composables/useFavourites'
 const { data, isLoading, error, refetch } = useSpells()
+const { toggleFavourite, isFavourite } = useFavourites('spells')
 // Reactive data
 const showSpellDialog = ref(false)
 const selectedSpell = ref<Spell | null>(null)
 const filters = ref();
+const showOnlyFavourites = ref(false)
+
 
 // Filters for the DataTable
 const initFilters = () => {
-    filters.value = {
-       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-        incantation: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-        type: { value: null, matchMode: FilterMatchMode.IN },
-        light: { value: null, matchMode: FilterMatchMode.EQUALS },
-        effect: { value: null, matchMode: FilterMatchMode.CONTAINS }
-    };
+  filters.value = {
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+    incantation: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+    type: { value: null, matchMode: FilterMatchMode.IN },
+    light: { value: null, matchMode: FilterMatchMode.EQUALS },
+    effect: { value: null, matchMode: FilterMatchMode.CONTAINS }
+  };
 };
 
 initFilters();
@@ -244,14 +229,21 @@ const spellLights = Object.values(SpellLight).map((value) => ({
 const clearFilter = () => {
   initFilters();
 };
+
+const filteredSpells = computed(() => {
+  if (!data.value) return []
+  if (showOnlyFavourites.value) {
+    return data.value.filter(spell => isFavourite(spell.id))
+  }
+  return data.value
+})
+
+const filterByFavourites = () => {
+  showOnlyFavourites.value = !showOnlyFavourites.value
+}
 const viewSpell = (spell: Spell) => {
   selectedSpell.value = spell
   showSpellDialog.value = true
-}
-
-const toggleFavorite = (spell: Spell) => {
-  // Implement favorite functionality
-  console.log('Toggle favorite for:', spell.name)
 }
 
 const getTypeSeverity = (type: string): string => {
@@ -274,7 +266,7 @@ const truncateText = (text: string, maxLength: number): string => {
 
 // Lifecycle
 onMounted(() => {
-   document.title = 'Stunning Spells'
+  document.title = 'Stunning Spells'
 })
 </script>
 

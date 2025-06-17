@@ -32,6 +32,7 @@ import { faRotateRight } from '@fortawesome/free-solid-svg-icons'
 import { faHeart } from '@fortawesome/free-solid-svg-icons'
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import { faFilterCircleXmark } from '@fortawesome/free-solid-svg-icons'
+import { faHeart as faHeartRegular} from '@fortawesome/free-regular-svg-icons'
 
 import App from './App.vue'
 import router from './router'
@@ -64,6 +65,7 @@ library.add(faRotateRight)
 library.add(faHeart)
 library.add(faMagnifyingGlass)
 library.add(faFilterCircleXmark)
+library.add(faHeartRegular)
 
 const wizardingPreset = definePreset(Aura, {
   semantic: {

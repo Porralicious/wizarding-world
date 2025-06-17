@@ -3,6 +3,7 @@ import { RouterLink, RouterView } from 'vue-router'
 import { ref } from 'vue'
 import Menubar from 'primevue/menubar'
 import { useWizardingWorldStore } from '@/stores/wizardingWorld'
+import { useAuthStore } from './stores'
 
 const items = ref([
   {
@@ -33,7 +34,7 @@ const items = ref([
 ])
 
 const wizardingWorldStore = useWizardingWorldStore()
-
+const authStore = useAuthStore()
 </script>
 
 <template>

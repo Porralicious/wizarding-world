@@ -88,14 +88,8 @@
               >
                 <font-awesome-icon icon="fas fa-eye" />
               </Button>
-              <Button
-                size="small"
-                text
-                severity="danger"
-                @click="toggleFavorite(data)"
-                v-tooltip="'Add to Favorites'"
-              >
-                <font-awesome-icon icon="fas fa-heart" />
+              <Button size="small" text severity="danger" @click="toggleFavourite(data.id)" v-tooltip="'Add to Favorites'">
+                <FontAwesomeIcon :icon="isFavourite(data.id)? 'fas fa-heart' : 'far fa-heart'" />
               </Button>
             </div>
           </template>
@@ -105,8 +99,8 @@
           <div class="text-center py-8">
             <i class="pi pi-search text-4xl text-gray-400 mb-4"></i>
             <p class="text-gray-500">No wizards found</p>
-            <Button severity="info" @click="loadWizards" class="mt-4">
-              <font-awesome-icon icon="fas fa-rotate-right" v-tooltip="'Reload'" />
+            <Button severity="info" @click="refetch" class="mt-4">
+              <FontAwesomeIcon icon="fas fa-rotate-right" v-tooltip="'Reload'" />
             </Button>
           </div>
         </template>
@@ -157,6 +151,8 @@ import Badge from 'primevue/badge'
 import Dialog from 'primevue/dialog'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useWizards } from '@/composables/useWizards'
+import { useFavourites } from '@/composables/useFavourites'
+const { toggleFavourite, isFavourite } = useFavourites('wizards')
 
 const { data, isLoading, error, refetch } = useWizards()
 
