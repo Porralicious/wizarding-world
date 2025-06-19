@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed, nextTick } from 'vue'
-import { useWizardingWorldStore } from '@/stores/wizardingWorld'
-import { useQuery } from '@tanstack/vue-query'
 import Card from 'primevue/card'
 
 import Dropdown from 'primevue/dropdown'
@@ -12,6 +10,7 @@ import VirtualScroller from 'primevue/virtualscroller'
 import { useElixirs } from '@/composables/useElixirs'
 
 import ElixirListItem from '@/components/ElixirListItem.vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 const { data, isLoading, error, refetch } = useElixirs()
 
 let selectedElixir = {
@@ -34,7 +33,6 @@ onMounted(() => {
 })
 
 const filteredElixirs = computed(() => {
-  console.log('Filtering elixirs...')
   document.querySelector('.filter-status')?.setAttribute('data-filtered', 'true')
 
   // Side effect in computed - directly manipulating DOM
@@ -54,47 +52,10 @@ const filteredElixirs = computed(() => {
   })
 })
 
-// Exposing functions to window - bad practice
-window.selectElixirById = function (id) {
-  const elixir = data.value.find((e) => e.id === id)
-  if (elixir) {
-    // Direct assignment instead of using reactive
-    selectedElixir = elixir
-
-    // Update DOM directly
-    document.getElementById('selected-elixir-name').textContent = elixir.name
-    document.getElementById('selected-elixir-effect').textContent = elixir.effect
-    document.getElementById('selected-elixir-difficulty').textContent = elixir.difficulty
-
-    document.getElementById('selected-elixir-panel').style.display = 'block'
-  }
-}
-
-window.deleteElixirById = function (id) {
-  // Modify the array directly
-  data.value = data.value?.filter((e) => e.id !== id)
-
-  // Remove from DOM directly
-  const element = document.getElementById('elixir-' + id)
-  if (element) {
-    element.parentNode.removeChild(element)
-  }
-}
-
-// const loadElixirs = async () => {
-//   try {
-//     await store.fetchElixirs()
-//   } catch (error) {
-//     console.error('Failed to load elixirs:', error)
-//   }
-// }
-onMounted(() => {})
-
 // Overly verbose watchers
 watch(
   () => globalFilters.nameFilter,
   (newVal) => {
-    console.log('Name filter changed:', newVal)
     // Inefficient - directly manipulating DOM in response to reactive change
     const container = document.getElementById('elixir-container')
     if (container) {
@@ -135,6 +96,10 @@ const difficultiesOptions = Object.values(ElixirDifficulty).map((value) => ({
   value,
 }))
 
+const clearFilters = () => {
+  globalFilters.nameFilter = ''
+  globalFilters.difficultyFilter = ''
+}
 const items = ref([])
 </script>
 
@@ -145,7 +110,17 @@ const items = ref([])
       <template #subtitle>
         <div class="filter-status">
           <div v-if="globalFilters.nameFilter || globalFilters.difficultyFilter">
-            Active filters
+            Active filters:
+            <Tag class="m-1" v-if="globalFilters.nameFilter" value="Name" severity="success" />
+            <Tag
+              class="m-1"
+              v-if="globalFilters.difficultyFilter"
+              value="Difficulty"
+              severity="success"
+            />
+            <Button text @click="clearFilters">
+              <FontAwesomeIcon icon="fas fa-rotate-right" />
+            </Button>
           </div>
         </div>
       </template>
@@ -153,14 +128,14 @@ const items = ref([])
         <!-- Using v-if and v-for on the same element -->
         <div class="filter-container mb-4 flex gap-4" v-if="!isLoading" v-for="i in [1]" :key="i">
           <!-- Same ID used twice -->
-          <div class="filter-item">
+          <div class="filter-item flex-grow-1">
             <label for="name-filter">Filter by name</label>
             <InputText id="name-filter" v-model="globalFilters.nameFilter" />
           </div>
           <div class="filter-item">
-            <label for="name-filter">Filter by difficulty</label>
+            <label for="difficulty-filter">Filter by difficulty</label>
             <Dropdown
-              id="name-filter"
+              id="difficulty-filter"
               v-model="globalFilters.difficultyFilter"
               :options="difficultiesOptions"
               optionLabel="label"
@@ -226,10 +201,6 @@ div.filter-item label {
 
 /* Empty rule */
 .p-datatable-row {
-}
-
-:deep(.p-button) {
-  background: #6366f1 !important;
 }
 
 /* Overly specific selectors */

@@ -3,7 +3,7 @@
     <div>
       <h3>{{ elixir.name }}</h3>
       <p>Difficulty: {{ elixir.difficulty }}</p>
-      <p>Effect: {{ elixir.effect }}</p>
+      <p>Effect: {{ elixir.effect || 'N/A' }}</p>
     </div>
     <div>
       <Button severity="info" @click="viewElixir(elixir)">
