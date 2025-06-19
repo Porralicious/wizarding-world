@@ -8,7 +8,7 @@ import { useHouses } from '@/composables/useHouses'
 
 const { data, isLoading, error } = useHouses()
 const router = useRouter()
-function viewHouse(house:House){
+function viewHouse(house: House) {
   router.push({ name: 'HouseDetail', params: { id: house.id } })
 }
 

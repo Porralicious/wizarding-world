@@ -3,17 +3,17 @@ import { ref, reactive, onMounted, watch, computed, nextTick } from 'vue'
 import { useWizardingWorldStore } from '@/stores/wizardingWorld'
 import { useQuery } from '@tanstack/vue-query'
 import Card from 'primevue/card'
-import Column from 'primevue/column'
-import Button from 'primevue/button'
+
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import { ElixirDifficulty } from '@/types/Elixir'
-import type { Elixir } from '@/types/Elixir'
+
 import VirtualScroller from 'primevue/virtualscroller'
 import { useElixirs } from '@/composables/useElixirs'
-import { useRouter } from 'vue-router'
+
+import ElixirListItem from '@/components/ElixirListItem.vue'
 const { data, isLoading, error, refetch } = useElixirs()
-const router = useRouter()
+
 let selectedElixir = {
   id: '',
   name: '',
@@ -31,37 +31,7 @@ var renderedElixirs = []
 
 onMounted(() => {
   document.title = 'Magical Elixirs'
-
-  // window.addEventListener('resize', () => {
-  //   console.log('Window resized')
-  //   refreshTable()
-  // })
-
-  // Immediately render initial elixirs to DOM directly
 })
-
-// Direct DOM manipulation instead of using Vue's templating
-// function addElixirToDOM(elixir) {
-//   const container = document.getElementById('elixir-container')
-//   if (!container) return
-
-//   const div = document.createElement('div')
-//   div.id = 'elixir-' + elixir.id // Creating duplicate IDs potentially
-//   div.className = 'elixir-item ' + elixir.difficulty.toLowerCase()
-
-//   // Using innerHTML instead of safer methods
-//   div.innerHTML = `
-//     <h4>${elixir.name}</h4>
-//     <p>Effect: ${elixir.effect}</p>
-//     <p>Difficulty: ${elixir.difficulty}</p>
-//     <div class="buttons">
-//       <button onclick="window.selectElixirById('${elixir.id}')">View</button>
-//       <button onclick="window.deleteElixirById('${elixir.id}')">Delete</button>
-//     </div>
-//   `
-
-//   container.appendChild(div)
-// }
 
 const filteredElixirs = computed(() => {
   console.log('Filtering elixirs...')
@@ -118,9 +88,7 @@ window.deleteElixirById = function (id) {
 //     console.error('Failed to load elixirs:', error)
 //   }
 // }
-onMounted(() => {
-
-})
+onMounted(() => {})
 
 // Overly verbose watchers
 watch(
@@ -162,38 +130,12 @@ watch(
   },
 )
 
-// Directly mutating an object
-function viewElixir(elixir) {
-  router.push({ name: 'ElixirDetail', params: { id: elixir.id } })
-}
-
-// Using both DOM API and Vue reactivity - inconsistent
-function refreshTable() {
-  nextTick(() => {
-    // Direct DOM manipulation
-    const rows = document.querySelectorAll('.elixir-item')
-    rows.forEach((row) => {
-      row.style.opacity = '0.8'
-      setTimeout(() => {
-        row.style.opacity = '1'
-      }, 300)
-    })
-
-    // Re-render after manipulation
-    renderElixirsDirectly()
-  })
-}
 const difficultiesOptions = Object.values(ElixirDifficulty).map((value) => ({
   label: value,
   value,
 }))
 
 const items = ref([])
-
-function deleteElixir(id) {
-  console.log('Deleting elixir', id)
-  data.value = data.value?.filter((e) => e.id !== id)
-}
 </script>
 
 <template>
@@ -240,40 +182,10 @@ function deleteElixir(id) {
               class="elixir-card"
               :style="`background-color: ${item.difficulty === 'Advanced' ? '#f8f0ff' : '#ffffff'}`"
             >
-              <h3 v-html="item.name"></h3>
-              <p v-html="`Effect: ${item.effect}`"></p>
-              <p>Difficulty: {{ item.difficulty }}</p>
-              <div class="action-buttons">
-                <Button severity="info" @click="viewElixir(item)">
-                  <font-awesome-icon icon="fas fa-circle-info" />
-                </Button>
-                <Button icon="pi pi-trash" severity="danger" @click="deleteElixir(item.id)">
-                  <font-awesome-icon icon="fas fa-trash" />
-                </Button>
-              </div>
+              <ElixirListItem :elixir="item"></ElixirListItem>
             </div>
           </template>
         </VirtualScroller>
-        <!-- Mixing v-if, v-show and v-for on same element -->
-        <!-- <div
-            v-for="elixir in filteredElixirs"
-            v-show="elixir.id !== 'hidden'"
-            class="elixir-card"
-            :style="`background-color: ${elixir.difficulty === 'Advanced' ? '#f8f0ff' : '#ffffff'}`"
-          >
-            <h3 v-html="elixir.name"></h3>
-            <p v-html="`Effect: ${elixir.effect}`"></p>
-            <p>Difficulty: {{ elixir.difficulty }}</p>
-            <div class="action-buttons">
-              <Button severity="info" @click="selectElixir(elixir)">
-                <font-awesome-icon icon="fas fa-circle-info" />
-              </Button>
-              <Button icon="pi pi-trash" severity="danger" @click="deleteElixir(elixir.id)">
-                <font-awesome-icon icon="fas fa-trash" />
-              </Button>
-            </div>
-          </div> -->
-        <!-- </div> -->
 
         <!-- Direct DOM manipulation container -->
         <div id="elixir-container" class="elixir-manual-container mt-6"></div>
@@ -330,41 +242,6 @@ div.elixir-grid div.elixir-card {
 }
 
 /* !important overrides */
-.elixir-card h3 {
-  color: #4338ca !important;
-  font-size: 18px !important;
-}
-
-/* Inline important */
-.elixir-manual-container {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 10px !important;
-}
-
-/* Duplicate selectors with different rules */
-.elixir-item {
-  border: 1px solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 4px;
-  background-color: white;
-}
-
-.elixir-item {
-  width: calc(33% - 10px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Contradictory rules */
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.action-buttons {
-  display: block;
-}
 
 /* Empty media query */
 @media (max-width: 768px) {

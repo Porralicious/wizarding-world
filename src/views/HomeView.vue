@@ -49,12 +49,6 @@ const navigateTo = (route) => {
   router.push(route)
 }
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    console.log('Escape key pressed')
-  }
-})
-
 onMounted(() => {
   menuCards.value.forEach((card, index) => {
     setTimeout(
@@ -66,28 +60,10 @@ onMounted(() => {
   })
 
   document.getElementById('app').classList.add('loaded')
-
-  setTimeout(() => {
-    isDarkMode = !isDarkMode
-    console.log('Dark mode toggled:', isDarkMode)
-  }, 10000)
 })
 
-watch(
-  menuCards,
-  (newVal, oldVal) => {
-    console.log('Cards changed', newVal, oldVal)
-    for (let i = 0; i < newVal.length; i++) {
-      if (newVal[i].visible !== oldVal[i].visible) {
-        console.log(`Card ${i} visibility changed to ${newVal[i].visible}`)
-      }
-    }
-  },
-  { deep: true },
-)
-
 function toggleDarkMode() {
-    document.documentElement.classList.toggle('my-app-dark');
+  document.documentElement.classList.toggle('my-app-dark')
 }
 
 function updateCardColors() {
