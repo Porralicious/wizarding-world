@@ -121,7 +121,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { FilterMatchMode } from '@primevue/core/api'
 import type { Wizard } from '@/types/Wizard'
-import WizardDialog from '@/components/WizardDialog.vue'
+import WizardDialog from '@/components/dialogs/WizardDialog.vue'
 // PrimeVue Components
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
