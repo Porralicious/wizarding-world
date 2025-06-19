@@ -3,8 +3,10 @@ import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
-import Tooltip from 'primevue/tooltip'
-import InputText from 'primevue/inputtext'
+import houseImage from '/images/houses.jpg'
+import spellsImage from '/images/spells.jpg'
+import elixirsImage from '/images/elixirs.jpg'
+import wizardsImage from '/images/wizards.jpg'
 
 const router = useRouter()
 
@@ -13,6 +15,7 @@ var isDarkMode = false
 const menuCards = ref([
   {
     title: 'Houses',
+    image: houseImage,
     description: 'Explore the different houses of the wizarding world.',
     icon: 'fas fa-building',
     route: '/houses',
@@ -21,6 +24,7 @@ const menuCards = ref([
   },
   {
     title: 'Spells',
+    image: spellsImage,
     description: 'Discover various spells from the wizarding world.',
     icon: 'fas fa-bolt',
     route: '/spells',
@@ -29,6 +33,7 @@ const menuCards = ref([
   },
   {
     title: 'Elixirs',
+    image: elixirsImage,
     description: 'Explore magical elixirs and potions from the wizarding world.',
     icon: 'fas fa-flask',
     route: '/elixirs',
@@ -37,6 +42,7 @@ const menuCards = ref([
   },
   {
     title: 'Wizards',
+    image: wizardsImage,
     description: 'Explore powerful wizards from the wizarding world.',
     icon: 'fas fa-wizard',
     route: '/wizards',
@@ -118,15 +124,7 @@ function updateCardColors() {
             @click="navigateTo(card.route)"
           >
             <template #header>
-              <div
-                :class="[
-                  card.color,
-                  'h-36 sm:h-40 flex items-center justify-center text-white rounded-t-lg',
-                ]"
-              >
-                <i :class="[card.icon, 'text-5xl sm:text-6xl']"></i>
-                <i :class="['pi pi-' + card.icon.split('-')[1], 'ml-2 text-3xl']"></i>
-              </div>
+              <img :src="card.image" alt="Logo" loading="lazy" class="h-48 w-full object-cover" />
             </template>
             <template #title>
               <div class="text-xl sm:text-2xl font-bold px-1">{{ card.title }}</div>
