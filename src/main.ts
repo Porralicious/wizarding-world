@@ -4,10 +4,11 @@ import 'tailwindcss'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
-import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
 import Aura from '@primeuix/themes/aura'
-import { VueQueryPlugin } from '@tanstack/vue-query'
+import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query'
+import { persistQueryClient } from '@tanstack/query-persist-client-core'
+import { createIndexedDBPersister } from './utils/indexedDbPersister'
 import { definePreset } from '@primeuix/themes'
 
 /* import the fontawesome core */
@@ -32,7 +33,7 @@ import { faRotateRight } from '@fortawesome/free-solid-svg-icons'
 import { faHeart } from '@fortawesome/free-solid-svg-icons'
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import { faFilterCircleXmark } from '@fortawesome/free-solid-svg-icons'
-import { faHeart as faHeartRegular} from '@fortawesome/free-regular-svg-icons'
+import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons'
 
 import App from './App.vue'
 import router from './router'
@@ -48,6 +49,8 @@ import Message from 'primevue/message'
 import Badge from 'primevue/badge'
 import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'
+
+import { registerSW } from 'virtual:pwa-register'
 
 library.add(faUserSecret)
 library.add(faFlask)
@@ -85,6 +88,28 @@ const wizardingPreset = definePreset(Aura, {
 })
 
 const app = createApp(App)
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 60 * 24,
+    },
+  },
+})
+
+const updateSW = registerSW({
+  onNeedRefresh() {
+    if (confirm('New content available. Reload?')) updateSW(true)
+  },
+})
+
+const indexedDbPersister = createIndexedDBPersister()
+
+persistQueryClient({
+  queryClient,
+  persister: indexedDbPersister,
+  maxAge: 1000 * 60 * 60 * 24,
+})
 
 app.use(createPinia())
 app.use(router)
@@ -97,8 +122,7 @@ app.use(PrimeVue, {
   },
 })
 app.component('font-awesome-icon', FontAwesomeIcon)
-app.use(VueQueryPlugin)
-
+app.use(VueQueryPlugin, { queryClient })
 app.component('DataTable', DataTable)
 app.component('Column', Column)
 app.component('Button', Button)

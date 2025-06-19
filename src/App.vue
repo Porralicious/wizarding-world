@@ -4,7 +4,8 @@ import { ref } from 'vue'
 import Menubar from 'primevue/menubar'
 import { useWizardingWorldStore } from '@/stores/wizardingWorld'
 import { useAuthStore } from './stores'
-
+import { useOnline } from '@/composables/useOnline'
+const { isOnline } = useOnline()
 const items = ref([
   {
     label: 'Home',
@@ -38,6 +39,9 @@ const authStore = useAuthStore()
 </script>
 
 <template>
+  <div v-if="!isOnline" class="bg-red-500 text-white text-center py-2">
+    You are offline. Some features may not work.
+  </div>
   <div class="app-container">
     <header>
       <div class="container mx-auto px-4 py-2">
