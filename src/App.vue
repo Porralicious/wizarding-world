@@ -5,6 +5,7 @@ import Menubar from 'primevue/menubar'
 import { useWizardingWorldStore } from '@/stores/wizardingWorld'
 import { useAuthStore } from './stores'
 import { useOnline } from '@/composables/useOnline'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 const { isOnline } = useOnline()
 const items = ref([
   {
@@ -37,6 +38,10 @@ const items = ref([
 const wizardingWorldStore = useWizardingWorldStore()
 const authStore = useAuthStore()
 authStore.init()
+
+function logOut() {
+  authStore.logout()
+}
 </script>
 
 <template>
@@ -55,10 +60,17 @@ authStore.init()
               v-slot="{ href, navigate, isActive }"
             >
               <a :href="href" @click="navigate" :class="[isActive ? 'router-link-active' : '']">
-                <font-awesome-icon :icon="item.icon" />
+                <FontAwesomeIcon :icon="item.icon" />
                 <span class="p-menuitem-text ml-3">{{ item.label }}</span>
               </a>
             </router-link>
+          </template>
+          <template v-if="authStore.user" #end>
+            <FontAwesomeIcon
+              v-tooltip="'Log Out'"
+              icon="fas fa-right-from-bracket"
+              @click="logOut"
+            />
           </template>
         </Menubar>
       </div>

@@ -23,12 +23,14 @@
         Common Room: <span>{{ house?.commonRoom }}</span>
       </p>
       <p class="m-0">
-        Heads: 
-        <span class="m-1" v-for="head in house?.heads">{{ head?.firstName + ' ' + head.lastName }}</span>
+        Heads:
+        <span class="m-1" v-for="head in house?.heads">{{
+          head?.firstName + ' ' + head.lastName
+        }}</span>
       </p>
-       <p class="m-0">
-        Traits: 
-        <span v-for="trait in house?.traits">{{ trait?.name }}</span>
+      <p class="m-0">
+        Traits:
+        <span>{{ house.traits.map((trait) => trait.name).join(', ') }}</span>
       </p>
     </Panel>
   </template>

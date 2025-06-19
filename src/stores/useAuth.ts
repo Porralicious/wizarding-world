@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { users } from '@/data/mockUsers'
+import router from '@/router'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -7,7 +8,7 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     login(username: string, password: string) {
-      const found = users.find(u => u.username === username && u.password === password)
+      const found = users.find((u) => u.username === username && u.password === password)
       if (found) {
         this.user = { username: found.username, role: found.role }
         localStorage.setItem('auth_user', JSON.stringify(this.user))
@@ -18,6 +19,7 @@ export const useAuthStore = defineStore('auth', {
     logout() {
       this.user = null
       localStorage.removeItem('auth_user')
+      router.push('/login')
     },
     init() {
       const stored = localStorage.getItem('auth_user')
