@@ -17,23 +17,40 @@
       </Message>
 
       <!-- DataTable -->
-      <DataTable v-else v-model:filters="filters" :value="filteredSpells" :paginator="true" :rows="10"
-        :rowsPerPageOptions="[5, 10, 20, 50]" :totalRecords="filteredSpells.length"
+      <DataTable
+        v-else
+        v-model:filters="filters"
+        :value="filteredSpells"
+        :paginator="true"
+        :rows="10"
+        :rowsPerPageOptions="[5, 10, 20, 50]"
+        :totalRecords="filteredSpells.length"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-        currentPageReportTemplate="{first} to {last} of {totalRecords}" :loading="isLoading" filterDisplay="menu"
-        :globalFilterFields="['firstName', 'lastName']" class="p-datatable-sm" stripedRows responsiveLayout="scroll">
+        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+        :loading="isLoading"
+        filterDisplay="menu"
+        :globalFilterFields="['firstName', 'lastName']"
+        class="p-datatable-sm"
+        stripedRows
+        responsiveLayout="scroll"
+      >
         <template #header>
           <div class="flex justify-between items-center">
             <h2 class="text-xl font-semibold">All Wizards ({{ filteredSpells.length }})</h2>
             <div class="flex gap-2">
               <Button type="button" outlined @click="filterByFavourites()">
-                <FontAwesomeIcon icon="fas fa-heart"></FontAwesomeIcon>
+                <FontAwesomeIcon
+                  :icon="showOnlyFavourites ? 'fas fa-heart' : 'far fa-heart'"
+                ></FontAwesomeIcon>
               </Button>
               <div class="p-input-icon-left">
-                <FontAwesomeIcon icon="fas fa-magnifying-glass" />
-                <InputText v-model="filters['global'].value" placeholder="Search wizards..." class="w-64" />
+                <InputText
+                  v-model="filters['global'].value"
+                  placeholder="Search wizards..."
+                  class="w-64"
+                />
               </div>
-              <Button @click="refetch" :loading="isLoading" severity="secondary" outlined>
+              <Button @onClick="refetch" :loading="isLoading" severity="secondary" outlined>
                 <FontAwesomeIcon icon="fas fa-rotate-right" />
               </Button>
             </div>
@@ -64,8 +81,13 @@
               <Button size="small" text @click="viewWizard(data)" v-tooltip="'View Details'">
                 <font-awesome-icon icon="fas fa-eye" />
               </Button>
-              <Button size="small" text severity="danger" @click="toggleFavourite(data.id)"
-                v-tooltip="'Add to Favorites'">
+              <Button
+                size="small"
+                text
+                severity="danger"
+                @click="toggleFavourite(data.id)"
+                v-tooltip="'Add to Favorites'"
+              >
                 <FontAwesomeIcon :icon="isFavourite(data.id) ? 'fas fa-heart' : 'far fa-heart'" />
               </Button>
             </div>
@@ -85,24 +107,13 @@
     </div>
   </div>
   <!-- Wizard Details Dialog -->
-  <Dialog v-model:visible="showWizardDialog" :header="selectedWizard?.firstName || 'Wizard Details'"
-    :style="{ width: '50vw' }" :modal="true">
-    <div v-if="selectedWizard" class="space-y-4">
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="font-semibold">Name:</label>
-          <p>{{ selectedWizard.firstName + selectedWizard.lastName }}</p>
-        </div>
-        <div>
-          <label class="font-semibold">Elixirs:</label>
-          <Tag v-if="selectedWizard.elixirs.length > 0" :value="selectedWizard.elixirs.length" />
-        </div>
-      </div>
-      <!-- <div v-if="selectedSpell.effect">
-        <label class="font-semibold">Effect:</label>
-        <p class="mt-2">{{ selectedSpell.effect }}</p>
-      </div> -->
-    </div>
+  <Dialog
+    v-model:visible="showWizardDialog"
+    :header="selectedWizard?.firstName || 'Wizard Details'"
+    :style="{ width: '50vw' }"
+    :modal="true"
+  >
+    <WizardDialog :wizard="selectedWizard"></WizardDialog>
   </Dialog>
 </template>
 
@@ -110,7 +121,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { FilterMatchMode } from '@primevue/core/api'
 import type { Wizard } from '@/types/Wizard'
-
+import WizardDialog from '@/components/WizardDialog.vue'
 // PrimeVue Components
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -146,7 +157,7 @@ const viewWizard = (wizard: Wizard) => {
 const filteredSpells = computed(() => {
   if (!data.value) return []
   if (showOnlyFavourites.value) {
-    return data.value.filter(spell => isFavourite(spell.id))
+    return data.value.filter((spell) => isFavourite(spell.id))
   }
   return data.value
 })

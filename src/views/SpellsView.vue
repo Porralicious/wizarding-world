@@ -12,19 +12,30 @@
       <Message v-else-if="error" severity="error" class="mb-4">
         {{ error }}
         <template #action>
-          <Button text @click="refetch" :loading="isLoading">
+          <Button text @onClick="refetch" :loading="isLoading">
             <FontAwesomeIcon icon="fas fa-rotate-right" />
           </Button>
         </template>
       </Message>
 
       <!-- DataTable -->
-      <DataTable v-else v-model:filters="filters" :value="filteredSpells" :paginator="true" :rows="10"
-        :rowsPerPageOptions="[5, 10, 20, 50]" :totalRecords="filteredSpells.length"
+      <DataTable
+        v-else
+        v-model:filters="filters"
+        :value="filteredSpells"
+        :paginator="true"
+        :rows="10"
+        :rowsPerPageOptions="[5, 10, 20, 50]"
+        :totalRecords="filteredSpells.length"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-        currentPageReportTemplate="{first} to {last} of {totalRecords}" :loading="isLoading" filterDisplay="menu"
-        :globalFilterFields="['name', 'type', 'incantation']" class="p-datatable-sm" stripedRows
-        responsiveLayout="scroll">
+        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+        :loading="isLoading"
+        filterDisplay="menu"
+        :globalFilterFields="['name', 'type', 'incantation']"
+        class="p-datatable-sm"
+        stripedRows
+        responsiveLayout="scroll"
+      >
         <template #header>
           <div class="flex justify-between items-center">
             <h2 class="text-xl font-semibold">All Spells ({{ filteredSpells.length }})</h2>
@@ -37,9 +48,13 @@
               </Button>
               <IconField iconPosition="left">
                 <InputIcon class="pi pi-search" />
-                <InputText v-model="filters['global'].value" placeholder="Search spells..." class="w-64" />
+                <InputText
+                  v-model="filters['global'].value"
+                  placeholder="Search spells..."
+                  class="w-64"
+                />
               </IconField>
-              <Button @click="refetch" :loading="isLoading" severity="secondary" outlined>
+              <Button @onClick="refetch" :loading="isLoading" severity="secondary" outlined>
                 <FontAwesomeIcon icon="fas fa-rotate-right" />
               </Button>
             </div>
@@ -54,19 +69,38 @@
 
         <Column field="incantation" header="Incantation" sortable style="min-width: 150px">
           <template #body="{ data }">
-            <Badge v-if="data.incantation" :value="data.incantation" severity="info" class="font-mono" />
+            <Badge
+              v-if="data.incantation"
+              :value="data.incantation"
+              severity="info"
+              class="font-mono"
+            />
             <span v-else class="text-gray-400 italic">No incantation</span>
           </template>
         </Column>
 
-        <Column field="type" header="Type" :showFilterMatchModes="false" sortable style="min-width: 120px">
+        <Column
+          field="type"
+          header="Type"
+          :showFilterMatchModes="false"
+          sortable
+          style="min-width: 120px"
+        >
           <template #body="{ data }">
             <Tag v-if="data.type" :value="data.type" :severity="getTypeSeverity(data.type)" />
             <span v-else class="text-gray-400 italic">Unknown</span>
           </template>
           <template #filter="{ filterModel, filterCallback }">
-            <MultiSelect v-model="filterModel.value" @change="filterCallback()" :options="spellTypes"
-              optionLabel="label" optionValue="value" placeholder="Any" style="min-width: 14rem" :maxSelectedLabels="1">
+            <MultiSelect
+              v-model="filterModel.value"
+              @change="filterCallback()"
+              :options="spellTypes"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Any"
+              style="min-width: 14rem"
+              :maxSelectedLabels="1"
+            >
               <template #option="slotProps">
                 <div class="flex items-center gap-2">
                   <span>{{ slotProps.option.label }}</span>
@@ -79,16 +113,26 @@
         <Column field="light" header="Light" sortable style="min-width: 100px">
           <template #body="{ data }">
             <div v-if="data.light" class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded-full border-2 border-gray-300" :style="{ backgroundColor: data.light }"
-                :title="data.light"></div>
+              <div
+                class="w-4 h-4 rounded-full border-2 border-gray-300"
+                :style="{ backgroundColor: data.light }"
+                :title="data.light"
+              ></div>
               <span class="text-sm">{{ data.light }}</span>
             </div>
             <span v-else class="text-gray-400 italic">No light</span>
           </template>
           <template #filter="{ filterModel, filterCallback }">
-            <Select v-model="filterModel.value" @change="filterCallback()" :options="spellLights" optionLabel="label"
-              optionValue="value" placeholder="Select One" style="min-width: 12rem" :showClear="true">
-
+            <Select
+              v-model="filterModel.value"
+              @change="filterCallback()"
+              :options="spellLights"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select One"
+              style="min-width: 12rem"
+              :showClear="true"
+            >
             </Select>
           </template>
         </Column>
@@ -108,8 +152,13 @@
               <Button size="small" text @click="viewSpell(data)" v-tooltip="'View Details'">
                 <FontAwesomeIcon icon="fas fa-eye" />
               </Button>
-              <Button size="small" text severity="danger" @click="toggleFavourite(data.id)"
-                v-tooltip="'Add to Favorites'">
+              <Button
+                size="small"
+                text
+                severity="danger"
+                @click="toggleFavourite(data.id)"
+                v-tooltip="'Add to Favorites'"
+              >
                 <FontAwesomeIcon :icon="isFavourite(data.id) ? 'fas fa-heart' : 'far fa-heart'" />
               </Button>
             </div>
@@ -127,48 +176,13 @@
     </div>
 
     <!-- Spell Details Dialog -->
-    <Dialog v-model:visible="showSpellDialog" :header="selectedSpell?.name || 'Spell Details'"
-      :style="{ width: '50vw' }" :modal="true">
-      <div v-if="selectedSpell" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="font-semibold">Name:</label>
-            <p>{{ selectedSpell.name }}</p>
-          </div>
-          <div>
-            <label class="font-semibold">Type:</label>
-            <Tag v-if="selectedSpell.type" :value="selectedSpell.type"
-              :severity="getTypeSeverity(selectedSpell.type)" />
-          </div>
-          <div>
-            <label class="font-semibold">Incantation:</label>
-            <Badge v-if="selectedSpell.incantation" :value="selectedSpell.incantation" severity="info"
-              class="font-mono" />
-          </div>
-          <div>
-            <label class="font-semibold">Can be verbal:</label>
-            <p>{{ selectedSpell.canBeVerbal }}</p>
-          </div>
-          <div v-if="selectedSpell.light">
-            <label class="font-semibold">Light:</label>
-            <div class="flex items-center gap-2">
-              <div class="w-6 h-6 rounded-full border-2 border-gray-300"
-                :style="{ backgroundColor: selectedSpell.light }">
-              </div>
-              <span>{{ selectedSpell.light }}</span>
-            </div>
-          </div>
-        </div>
-        <div v-if="selectedSpell.effect">
-          <label class="font-semibold">Effect:</label>
-          <p class="mt-2">{{ selectedSpell.effect }}</p>
-        </div>
-        <div>
-          <label class="font-semibold">Creator:</label>
-          <p v-if="selectedSpell.creator">{{ selectedSpell.creator }}</p>
-          <p v-else>Unknown</p>
-        </div>
-      </div>
+    <Dialog
+      v-model:visible="showSpellDialog"
+      :header="selectedSpell?.name || 'Spell Details'"
+      :style="{ width: '50vw' }"
+      :modal="true"
+    >
+      <SpellDialog :spell="selectedSpell"> </SpellDialog>
     </Dialog>
   </div>
 </template>
@@ -191,8 +205,9 @@ import Badge from 'primevue/badge'
 import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'
 import MultiSelect from 'primevue/multiselect'
+import SpellDialog from '@/components/dialogs/SpellDialog.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import Select from 'primevue/select';
+import Select from 'primevue/select'
 import { useSpells } from '@/composables/useSpells'
 import { useFavourites } from '@/composables/useFavourites'
 const { data, isLoading, error, refetch } = useSpells()
@@ -200,9 +215,8 @@ const { toggleFavourite, isFavourite } = useFavourites('spells')
 // Reactive data
 const showSpellDialog = ref(false)
 const selectedSpell = ref<Spell | null>(null)
-const filters = ref();
+const filters = ref()
 const showOnlyFavourites = ref(false)
-
 
 // Filters for the DataTable
 const initFilters = () => {
@@ -212,11 +226,11 @@ const initFilters = () => {
     incantation: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
     type: { value: null, matchMode: FilterMatchMode.IN },
     light: { value: null, matchMode: FilterMatchMode.EQUALS },
-    effect: { value: null, matchMode: FilterMatchMode.CONTAINS }
-  };
-};
+    effect: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  }
+}
 
-initFilters();
+initFilters()
 const spellTypes = Object.values(SpellType).map((value) => ({
   label: value,
   value,
@@ -228,13 +242,13 @@ const spellLights = Object.values(SpellLight).map((value) => ({
 }))
 
 const clearFilter = () => {
-  initFilters();
-};
+  initFilters()
+}
 
 const filteredSpells = computed(() => {
   if (!data.value) return []
   if (showOnlyFavourites.value) {
-    return data.value.filter(spell => isFavourite(spell.id))
+    return data.value.filter((spell) => isFavourite(spell.id))
   }
   return data.value
 })
