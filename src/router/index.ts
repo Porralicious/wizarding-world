@@ -32,12 +32,6 @@ const router = createRouter({
       meta: { requiresAuth: true, role: 'explorer' }
     },
     {
-      path: '/spells/:id',
-      name: 'spell-details',
-      component: () => import('../views/SpellDetailsView.vue'),
-      meta: { requiresAuth: true, role: 'explorer' }
-    },
-    {
       path: '/elixirs',
       name: 'elixirs',
       component: () => import('../views/ElixirsView.vue'),
